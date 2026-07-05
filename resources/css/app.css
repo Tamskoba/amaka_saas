@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+
+    --amaka-primary: #4B2E1F;
+
+    --amaka-secondary: #C87A2A;
+
+    --amaka-bg: #F7F2EE;
+
+    --amaka-card: #FFFFFF;
+
+    --amaka-border: #EADFD3;
+
+    --amaka-text: #6B4A3A;
+
+}
+
+.amaka-btn-primary {
+
+    background:#C87A2A;
+
+    color:white;
+
+    border-radius:14px;
+
+    padding:12px 24px;
+
+    transition:.2s;
+}
+
+.amaka-btn-primary:hover {
+
+    background:#B36C22;
+
+}
