@@ -1,248 +1,357 @@
-<div
-    class="
-        min-h-screen
-        bg-[#FDF8F4]
-        p-6
-        md:p-10
-    "
->
+<div class="max-w-4xl mx-auto py-8 px-4">
 
-    <div class="max-w-4xl mx-auto">
+    {{-- HEADER --}}
+    <div class="mb-8">
+        <h1 class="text-2xl md:text-3xl font-semibold text-[#4A2D21]">
+            {{ $form->title }}
+        </h1>
 
-        {{-- HEADER --}}
-        <div
-            class="
-                bg-white
-                rounded-[40px]
-                p-10
-                shadow-[0_10px_40px_rgba(0,0,0,0.04)]
-                border
-                border-[#F1E4D8]
-                mb-8
-            "
-        >
+        @if($form->description)
+            <p class="mt-2 text-[#6B554B]">
+                {{ $form->description }}
+            </p>
+        @endif
+    </div>
 
-            <p
-                class="
-                    text-[#C87A2A]
-                    italic
-                    mb-3
-                "
-            >
-                Questionnaire santé
+
+    {{-- QUESTIONNAIRE TERMINE --}}
+    @if($isCompleted && ! $isEditMode)
+
+        <div class="bg-white rounded-3xl border border-[#EADFD3] shadow-sm p-8 md:p-12 text-center">
+
+            <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700 text-3xl">
+                ✓
+            </div>
+
+            <h2 class="text-2xl md:text-3xl font-semibold text-[#4A2D21]">
+                Questionnaire terminé
+            </h2>
+
+            <p class="mt-3 text-[#6B554B] text-lg">
+                ✓ Toutes vos réponses ont été enregistrées.
             </p>
 
-            <h1
-                class="
-                    text-5xl
-                    text-[#4B2E1F]
-                    font-bold
-                    mb-5
-                "
-            >
-                {{ $form['title'] }}
-            </h1>
+            <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
 
-            <p
-                class="
-                    text-[#6B4A3A]
-                    text-lg
-                "
-            >
-                {{ $form['description'] }}
-            </p>
+                @if(Route::has('forms.responses'))
+                    <a
+                        href="{{ route('forms.responses', $form->id) }}"
+                        class="inline-flex items-center justify-center rounded-xl border border-[#C87A2A] px-6 py-3 font-medium text-[#C87A2A] hover:bg-[#FFF7EF]"
+                    >
+                        Consulter mes réponses
+                    </a>
+                @endif
 
+                <a
+                    href="{{ route('forms.run', $form->id) }}?edit=1"
+                    class="inline-flex items-center justify-center rounded-xl bg-[#C87A2A] px-6 py-3 font-medium text-white hover:bg-[#A96220]"
+                >
+                    Modifier mes réponses
+                </a>
+
+                <a
+                    href="{{ route('forms.index') }}"
+                    class="inline-flex items-center justify-center rounded-xl border border-[#C87A2A] px-6 py-3 font-medium text-[#C87A2A] hover:bg-[#FFF7EF]"
+                >
+                    Retour à mes questionnaires
+                </a>
+
+            </div>
         </div>
 
-        {{-- QUESTION CARD --}}
-        <div
-            wire:key="question-step-{{ $currentQuestionIndex }}"
-            class="
-                bg-white
-                rounded-[40px]
-                p-10
-                shadow-[0_10px_40px_rgba(0,0,0,0.04)]
-                border
-                border-[#F1E4D8]
-            "
-        >
 
-            @if($currentQuestion)
+    @else
 
-                {{-- PROGRESS --}}
-                <div class="mb-10">
+        {{-- AUCUNE QUESTION --}}
+        @if(! $question)
 
-                    <div
-                        class="
-                            flex
-                            justify-between
-                            text-sm
-                            mb-2
-                            text-[#6B4A3A]
-                        "
-                    >
-                        <span>
-                            Question
-                            {{ $currentQuestionIndex + 1 }}
-                            /
-                            {{ count($questions) }}
-                        </span>
+            <div class="bg-white rounded-3xl border border-[#EADFD3] p-8 text-center">
+                <p class="text-[#6B554B]">
+                    Aucune question disponible.
+                </p>
+            </div>
 
-                        <span>
-                            {{ $this->progress }}%
-                        </span>
-                    </div>
+        @else
 
-                    <div
-                        class="
-                            h-3
-                            bg-[#F1E4D8]
-                            rounded-full
-                            overflow-hidden
-                        "
-                    >
+            {{-- PROGRESSION --}}
+            <div class="mb-8">
 
-                        <div
-                            class="
-                                h-3
-                                bg-[#C87A2A]
-                                rounded-full
-                            "
-                            style="width: {{ $this->progress }}%"
-                        ></div>
+                <div class="flex justify-between items-center mb-2">
 
-                    </div>
+                    <span class="text-sm font-medium text-[#6B554B]">
+                        Question {{ $currentQuestionIndex + 1 }}
+                        sur {{ count($questions) }}
+                    </span>
+
+                    <span class="text-sm font-semibold text-[#C87A2A]">
+                        {{ $this->progress }}%
+                    </span>
 
                 </div>
-                @error('answer')
+
+                <div class="w-full h-2 rounded-full bg-[#F1E8DF] overflow-hidden">
 
                     <div
-                        class="
-                            mt-4
-                            text-red-600
-                        "
-                    >
-                        {{ $message }}
+                        class="h-full bg-[#C87A2A] rounded-full transition-all duration-300"
+                        style="width: {{ $this->progress }}%"
+                    ></div>
+
+                </div>
+            </div>
+
+
+            {{-- QUESTION --}}
+            <div
+                wire:key="question-card-{{ $question['id'] }}"
+                class="bg-white rounded-3xl border border-[#EADFD3] shadow-sm p-6 md:p-10"
+            >
+
+                {{-- TEXTE --}}
+                <div class="mb-8">
+
+                    <h2 class="text-xl md:text-2xl font-semibold text-[#4A2D21]">
+
+                        {{ $question['question_text'] ?? '' }}
+
+                        @if($question['is_required'] ?? false)
+                            <span class="text-red-500">*</span>
+                        @endif
+
+                    </h2>
+
+                    @if(!empty($question['help_text']))
+                        <p class="mt-2 text-sm text-[#7A665D]">
+                            {{ $question['help_text'] }}
+                        </p>
+                    @endif
+
+                </div>
+
+
+                {{-- RADIO --}}
+                @if(($question['question_type'] ?? null) === 'radio')
+
+                    <div class="space-y-3">
+
+                        @foreach($question['options'] ?? [] as $option)
+
+                            @php
+                                $optionValue =
+                                    $option['option_value']
+                                    ?? $option['value']
+                                    ?? null;
+
+                                $optionLabel =
+                                    $option['option_label']
+                                    ?? $option['label']
+                                    ?? $optionValue
+                                    ?? '';
+                            @endphp
+
+                            @if($optionValue !== null)
+
+                                <label
+                                    wire:key="radio-{{ $question['id'] }}-{{ $optionValue }}"
+                                    class="flex items-center gap-3 cursor-pointer rounded-xl border border-transparent p-3 hover:bg-[#FFF7EF]"
+                                >
+
+                                    <input
+                                        type="radio"
+                                        wire:model.live="answers.{{ $question['id'] }}"
+                                        value="{{ $optionValue }}"
+                                        class="h-4 w-4 text-[#C87A2A] focus:ring-[#C87A2A]"
+                                    >
+
+                                    <span class="text-[#4A2D21]">
+                                        {{ $optionLabel }}
+                                    </span>
+
+                                </label>
+
+                            @endif
+
+                        @endforeach
+
                     </div>
 
-                @enderror
-                {{-- QUESTION --}}
-                <h2
-                    class="
-                        text-3xl
-                        text-[#4B2E1F]
-                        font-semibold
-                        mb-8
-                    "
-                >
-                    {{ $currentQuestion['question_text'] }}
-                </h2>
-                
-                {{-- HELP --}}
-                @if(!empty($currentQuestion['help_text']))
 
-                    <p
-                        class="
-                            mb-6
-                            text-[#6B4A3A]
-                        "
-                    >
-                        {{ $currentQuestion['help_text'] }}
-                    </p>
+                    {{-- FREQUENCE --}}
+                    @if($this->isTemporalQuestion($question))
+
+                        <div class="mt-6 rounded-2xl bg-[#FFF7EF] border border-[#EADFD3] p-5">
+
+                            <label class="block mb-2 font-medium text-[#4A2D21]">
+                                À quelle fréquence cela se produit-il ?
+                                <span class="text-red-500">*</span>
+                            </label>
+
+                            <select
+                                wire:model="frequencies.{{ $question['id'] }}"
+                                class="w-full rounded-xl border border-[#EADFD3] bg-white px-4 py-3 focus:ring-2 focus:ring-[#C87A2A]"
+                            >
+
+                                <option value="">
+                                    Sélectionnez une fréquence
+                                </option>
+
+                                <option value="jamais">
+                                    Jamais
+                                </option>
+
+                                <option value="rarement">
+                                    Rarement
+                                </option>
+
+                                <option value="parfois">
+                                    Parfois
+                                </option>
+
+                                <option value="souvent">
+                                    Souvent
+                                </option>
+
+                                <option value="quotidiennement">
+                                    Quotidiennement
+                                </option>
+
+                            </select>
+
+                            @error('frequency')
+                                <p class="mt-2 text-sm text-red-600">
+                                    {{ $message }}
+                                </p>
+                            @enderror
+
+                        </div>
+
+                    @endif
 
                 @endif
 
+
+                {{-- CHECKBOX --}}
+                @if(($question['question_type'] ?? null) === 'checkbox')
+
+                    <div class="space-y-3">
+
+                        @foreach($question['options'] ?? [] as $option)
+
+                            @php
+                                $optionValue =
+                                    $option['option_value']
+                                    ?? $option['value']
+                                    ?? null;
+
+                                $optionLabel =
+                                    $option['option_label']
+                                    ?? $option['label']
+                                    ?? $optionValue
+                                    ?? '';
+                            @endphp
+
+                            @if($optionValue !== null)
+
+                                <label
+                                    wire:key="checkbox-{{ $question['id'] }}-{{ $optionValue }}"
+                                    class="flex items-center gap-3 cursor-pointer rounded-xl border border-transparent p-3 hover:bg-[#FFF7EF]"
+                                >
+
+                                    <input
+                                        type="checkbox"
+                                        wire:model.live="answers.{{ $question['id'] }}"
+                                        value="{{ $optionValue }}"
+                                        class="h-4 w-4 rounded text-[#C87A2A] focus:ring-[#C87A2A]"
+                                    >
+
+                                    <span class="text-[#4A2D21]">
+                                        {{ $optionLabel }}
+                                    </span>
+
+                                </label>
+
+                            @endif
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+
                 {{-- TEXT --}}
-                @if($currentQuestion['question_type'] === 'text')
+                @if(($question['question_type'] ?? null) === 'text')
 
                     <input
                         type="text"
-                        wire:model="answers.{{ $currentQuestion['id'] }}"
-                        placeholder="{{ $currentQuestion['placeholder'] ?? '' }}"
-                        class="
-                            w-full
-                            rounded-2xl
-                            border-[#E8D9CC]
-                        "
+                        wire:model="answers.{{ $question['id'] }}"
+                        placeholder="{{ $question['placeholder'] ?? '' }}"
+                        class="w-full rounded-xl border border-[#EADFD3] bg-white px-4 py-3 text-[#4A2D21] focus:ring-2 focus:ring-[#C87A2A]"
                     >
 
                 @endif
 
+
                 {{-- TEXTAREA --}}
-                @if($currentQuestion['question_type'] === 'textarea')
+                @if(($question['question_type'] ?? null) === 'textarea')
 
                     <textarea
-
-                        wire:model="answers.{{ $currentQuestion['id'] }}"
-
+                        wire:model="answers.{{ $question['id'] }}"
                         rows="5"
-
-                        placeholder="{{ $currentQuestion['placeholder'] ?? '' }}"
-
-                        class="
-                            w-full
-                            rounded-2xl
-                            border-[#E8D9CC]
-                        "
+                        placeholder="{{ $question['placeholder'] ?? '' }}"
+                        class="w-full rounded-xl border border-[#EADFD3] bg-white px-4 py-3 text-[#4A2D21] focus:ring-2 focus:ring-[#C87A2A]"
                     ></textarea>
 
                 @endif
 
-                {{-- NUMBER --}}
-                @if($currentQuestion['question_type'] === 'number')
-
-                    <input
-                        type="number"
-                        wire:model="answers.{{ $currentQuestion['id'] }}"
-                        class="
-                            w-full
-                            rounded-2xl
-                            border-[#E8D9CC]
-                        "
-                    >
-
-                @endif
 
                 {{-- DATE --}}
-                @if($currentQuestion['question_type'] === 'date')
+                @if(($question['question_type'] ?? null) === 'date')
 
                     <input
                         type="date"
-                        wire:model="answers.{{ $currentQuestion['id'] }}"
-                        class="
-                            w-full
-                            rounded-2xl
-                            border-[#E8D9CC]
-                        "
+                        wire:model="answers.{{ $question['id'] }}"
+                        class="w-full rounded-xl border border-[#EADFD3] bg-white px-4 py-3 text-[#4A2D21] focus:ring-2 focus:ring-[#C87A2A]"
                     >
 
                 @endif
 
+
                 {{-- SELECT --}}
-                @if($currentQuestion['question_type'] === 'select')
+                @if(($question['question_type'] ?? null) === 'select')
 
                     <select
-
-                        wire:model="answers.{{ $currentQuestion['id'] }}"
-
-                        class="
-                            w-full
-                            rounded-2xl
-                            border-[#E8D9CC]
-                        "
+                        wire:model.live="answers.{{ $question['id'] }}"
+                        class="w-full rounded-xl border border-[#EADFD3] bg-white px-4 py-3 text-[#4A2D21] focus:ring-2 focus:ring-[#C87A2A]"
                     >
 
                         <option value="">
-                            Sélectionner...
+                            Sélectionnez...
                         </option>
 
-                        @foreach($currentQuestion['options'] as $option)
+                        @foreach($question['options'] ?? [] as $option)
 
-                            <option
-                                value="{{ $option['option_value'] }}"
-                            >
-                                {{ $option['option_label'] }}
-                            </option>
+                            @php
+                                $optionValue =
+                                    $option['option_value']
+                                    ?? $option['value']
+                                    ?? null;
+
+                                $optionLabel =
+                                    $option['option_label']
+                                    ?? $option['label']
+                                    ?? $optionValue
+                                    ?? '';
+                            @endphp
+
+                            @if($optionValue !== null)
+
+                                <option
+                                    value="{{ $optionValue }}"
+                                >
+                                    {{ $optionLabel }}
+                                </option>
+
+                            @endif
 
                         @endforeach
 
@@ -250,135 +359,64 @@
 
                 @endif
 
-                {{-- RADIO --}}
-                @if($currentQuestion['question_type'] === 'radio')
 
-                    <div class="space-y-3">
+                {{-- NUMBER --}}
+                @if(($question['question_type'] ?? null) === 'number')
 
-                        @foreach($currentQuestion['options'] as $option)
+                    <input
+                        type="number"
+                        wire:model="answers.{{ $question['id'] }}"
+                        placeholder="{{ $question['placeholder'] ?? '' }}"
+                        class="w-full rounded-xl border border-[#EADFD3] bg-white px-4 py-3 text-[#4A2D21] focus:ring-2 focus:ring-[#C87A2A]"
+                    >
 
-                            <label
-                                class="
-                                    flex
-                                    items-center
-                                    gap-3
-                                    p-4
-                                    rounded-2xl
-                                    border
-                                    border-[#F1E4D8]
-                                    cursor-pointer
-                                "
-                            >
-
-                                <input
-
-                                    type="radio"
-                                    name="question_{{ $currentQuestion['id'] }}"
-                                    value="{{ $option['option_value'] }}"
-                                    wire:model.live="answers.{{ $currentQuestion['id'] }}"
-                                >
-
-                                <span>
-                                    {{ $option['option_label'] }}
-                                </span>
-
-                            </label>
-
-                        @endforeach
-
-                    </div>
                 @endif
 
-                {{-- CHECKBOX --}}
-                @if($currentQuestion['question_type'] === 'checkbox')
 
-                    <div class="space-y-3">
+                {{-- ERREUR --}}
+                @error('answer')
 
-                        @foreach($currentQuestion['options'] as $option)
-
-                            <label
-                                class="
-                                    flex
-                                    items-center
-                                    gap-3
-                                    p-4
-                                    rounded-2xl
-                                    border
-                                    border-[#F1E4D8]
-                                    cursor-pointer
-                                "
-                            >
-
-                                <input
-
-                                    type="checkbox"
-
-                                    value="{{ $option['option_value'] }}"
-                                    wire:model.live="answers.{{ $currentQuestion['id'] }}"
-                                >
-
-                                <span>
-                                    {{ $option['option_label'] }}
-                                </span>
-
-                            </label>
-
-                        @endforeach
-
+                    <div class="mt-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                        {{ $message }}
                     </div>
-                @endif
 
-                {{-- ACTIONS --}}
-                <div
-                    class="
-                        flex
-                        justify-between
-                        mt-12
-                    "
-                >
+                @enderror
+
+
+                {{-- NAVIGATION --}}
+                <div class="mt-10 flex items-center justify-between gap-4">
 
                     <button
-
+                        type="button"
                         wire:click="previousQuestion"
-
+                        wire:loading.attr="disabled"
                         @disabled($currentQuestionIndex === 0)
-
-                        class="
-                            px-6
-                            py-3
-                            rounded-2xl
-                            border
-                            border-[#E8D9CC]
-                            disabled:opacity-50
-                        "
+                        class="inline-flex items-center justify-center rounded-xl border border-[#C87A2A] px-6 py-3 font-medium text-[#C87A2A] hover:bg-[#FFF7EF] disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        Précédent
+                        ← Précédent
                     </button>
 
+
                     <button
-
+                        type="button"
                         wire:click="nextQuestion"
-
-                        class="
-                            px-8
-                            py-3
-                            rounded-2xl
-                            bg-[#4B2E1F]
-                            text-black
-                        "
+                        wire:loading.attr="disabled"
+                        class="inline-flex items-center justify-center rounded-xl bg-[#C87A2A] px-6 py-3 font-medium text-black hover:bg-[#A96220] disabled:opacity-50"
                     >
 
                         @if(
-                            $currentQuestionIndex
-                            <
-                            count($questions)-1
+                            $currentQuestionIndex >= count($questions) - 1
                         )
 
-                            Suivant
+                            @if($isEditMode)
+                                Enregistrer les modifications
+                            @else
+                                Terminer le questionnaire
+                            @endif
 
                         @else
 
-                            Terminer
+                            Suivant →
 
                         @endif
 
@@ -386,34 +424,10 @@
 
                 </div>
 
-            @else
+            </div>
 
-                <div class="text-center py-20">
+        @endif
 
-                    <h2
-                        class="
-                            text-3xl
-                            text-[#4B2E1F]
-                            mb-4
-                        "
-                    >
-                        Questionnaire terminé
-                    </h2>
-
-                    <p
-                        class="
-                            text-[#6B4A3A]
-                        "
-                    >
-                        Merci pour votre participation.
-                    </p>
-
-                </div>
-
-            @endif
-
-        </div>
-
-    </div>
+    @endif
 
 </div>

@@ -12,67 +12,56 @@ use Livewire\WithFileUploads;
 class FormImport extends Component
 {
     use WithFileUploads;
-    
+
     protected $rules = [
         'files.*' => 'required|file|mimes:json,txt'
-    ];  
+    ];
 
     public array $files = [];
 
     public function import(): void
     {
-
-// $content = file_get_contents(
-//     $this->files[0]->getRealPath()
-// );
-
-// $content = str_replace(
-//     ['```json', '```'],
-//     '',
-//     $content
-// );
-
-// $data = json_decode($content, true);
-
-// dd(
-//     json_last_error_msg(),
-//     $data['title'] ?? null
-// );
         foreach ($this->files as $file) {
 
             try {
 
                 $json = file_get_contents(
-
                     $file->getRealPath()
-
                 );
 
-                $json = str_replace(['```json', '```'],'',$json);
+                /*
+                |--------------------------------------------------------------------------
+                | Nettoyage éventuel des blocs Markdown
+                |--------------------------------------------------------------------------
+                */
 
-                $data = json_decode($json, true);
+                $json = str_replace(
+                    ['```json', '```'],
+                    '',
+                    $json
+                );
 
-                if (!$data) {
+                $data = json_decode(
+                    $json,
+                    true
+                );
 
+                if (!is_array($data)) {
                     continue;
                 }
 
                 /*
                 |--------------------------------------------------------------------------
-                | AVOID DUPLICATES
+                | Éviter les doublons
                 |--------------------------------------------------------------------------
                 */
 
                 $exists = Form::where(
-
                     'title',
-
                     $data['title']
-
                 )->exists();
 
                 if ($exists) {
-
                     continue;
                 }
 
@@ -83,13 +72,9 @@ class FormImport extends Component
                 */
 
                 $form = Form::create([
-
                     'title' => $data['title'],
-
                     'description' => $data['description'] ?? null,
-
                     'is_active' => $data['is_active'] ?? true,
-
                 ]);
 
                 /*
@@ -99,23 +84,15 @@ class FormImport extends Component
                 */
 
                 foreach (
-
-                    $data['sections']
-
+                    $data['sections'] ?? []
                     as $sectionIndex => $sectionData
-
                 ) {
 
                     $section = FormSection::create([
-
                         'form_id' => $form->id,
-
                         'title' => $sectionData['title'],
-
                         'description' => $sectionData['description'] ?? null,
-
                         'sort_order' => $sectionIndex,
-
                     ]);
 
                     /*
@@ -125,29 +102,73 @@ class FormImport extends Component
                     */
 
                     foreach (
-
-                        $sectionData['questions']
-
+                        $sectionData['questions'] ?? []
                         as $questionIndex => $questionData
-
                     ) {
-                        //dd($questionData);
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | LOGIQUE CONDITIONNELLE
+                        |--------------------------------------------------------------------------
+                        |
+                        | Le JSON utilise :
+                        |
+                        | "depends_on": {
+                        |     "question_key": "...",
+                        |     "value": "..."
+                        | }
+                        |
+                        | La BDD possède déjà :
+                        |
+                        | conditional_logic
+                        |
+                        | On stocke donc depends_on dans conditional_logic.
+                        |
+                        */
+
+                        $conditionalLogic =
+                            $questionData['depends_on'] ?? null;
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | QUESTION
+                        |--------------------------------------------------------------------------
+                        */
+
                         $question = Question::create([
-                            'form_id' => $form->id,
 
-                            'section_id' => $section->id,
+                            'form_id' =>
+                                $form->id,
 
-                            'question_text' => $questionData['question_text'],
+                            'section_id' =>
+                                $section->id,
 
-                            'question_type' => $questionData['question_type'],
+                            'question_text' =>
+                                $questionData['question_text'],
 
-                            'placeholder' => $questionData['placeholder'] ?? null,
+                            'question_type' =>
+                                $questionData['question_type'],
 
-                            'help_text' => $questionData['help_text'] ?? null,
+                            'placeholder' =>
+                                $questionData['placeholder'] ?? null,
 
-                            'is_required' => $questionData['is_required'] ?? false,
+                            'help_text' =>
+                                $questionData['help_text'] ?? null,
 
-                            'sort_order' => $questionIndex,
+                            'is_required' =>
+                                $questionData['is_required'] ?? false,
+
+                            'sort_order' =>
+                                $questionIndex,
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | IMPORTANT
+                            |--------------------------------------------------------------------------
+                            */
+
+                            'conditional_logic' =>
+                                $conditionalLogic,
 
                         ]);
 
@@ -158,26 +179,32 @@ class FormImport extends Component
                         */
 
                         if (
-
                             isset($questionData['options'])
-
+                            &&
+                            is_array($questionData['options'])
                         ) {
 
                             foreach (
-
                                 $questionData['options']
-
                                 as $optionIndex => $optionData
-
                             ) {
 
                                 QuestionOption::create([
 
-                                    'question_id' => $question->id,
-                                    'option_label' => $optionData['label'],
-                                    'option_value' => $optionData['value'],
-                                    'option_score' => $optionData['score'] ?? 0,
-                                    'sort_order' => $optionIndex,
+                                    'question_id' =>
+                                        $question->id,
+
+                                    'option_label' =>
+                                        $optionData['label'] ?? '',
+
+                                    'option_value' =>
+                                        $optionData['value'] ?? '',
+
+                                    'option_score' =>
+                                        $optionData['score'] ?? 0,
+
+                                    'sort_order' =>
+                                        $optionIndex,
 
                                 ]);
                             }
@@ -192,22 +219,21 @@ class FormImport extends Component
         }
 
         session()->flash(
-
             'success',
-
             'Import terminé avec succès.'
-
         );
 
-        $this->redirectRoute('admin.forms');
+        $this->redirectRoute(
+            'admin.forms'
+        );
     }
 
     public function render()
     {
         return view(
             'livewire.admin.forms.form-import'
-        )
-
-        ->layout('components.layouts.admin');
-    }  
+        )->layout(
+            'components.layouts.admin'
+        );
+    }
 }

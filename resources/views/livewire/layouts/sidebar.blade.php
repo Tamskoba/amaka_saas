@@ -92,6 +92,28 @@
         >
             Mon compte
         </a>
+
+        <a
+            href="{{ route('sessions.history') }}"
+            class="
+                flex
+                items-center
+                gap-3
+                px-4
+                py-3
+                rounded-xl
+                text-gray-700
+                hover:bg-[#FDF8F4]
+                hover:text-[#4B2E1F]
+                transition
+            "
+        >
+            <span>🕘</span>
+
+            <span>
+                Historique
+            </span>
+        </a>        
         
         {{-- ADMIN ACCESS --}}
         @auth

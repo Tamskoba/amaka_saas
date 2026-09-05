@@ -12,7 +12,8 @@ use App\Livewire\Forms\FormRunner;
 use App\Livewire\Admin\Forms\DeletedForms;
 use App\Livewire\Admin\Users\CreateUser;
 use App\Livewire\Admin\Users\EditUser;
-
+use App\Livewire\Sessions\SessionHistory;
+use App\Livewire\Admin\Users\UserSessionHistory;
 
 /*
 |--------------------------------------------------------------------------
@@ -158,3 +159,23 @@ Route::get(
     '/admin/users/{user}/forms',
     \App\Livewire\Admin\Users\AssignForms::class
 )->name('admin.users.forms');
+
+Route::get(
+    '/forms/{form}/responses',
+    \App\Livewire\Forms\FormResponses::class
+)
+    ->middleware(['auth'])
+    ->name('forms.responses');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get(
+        '/sessions/history',
+        SessionHistory::class
+    )->name('sessions.history');
+
+
+    Route::get(
+        '/admin/users/{user}/sessions',
+        UserSessionHistory::class
+    )->name('admin.users.sessions');    
+});

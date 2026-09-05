@@ -157,7 +157,21 @@
                         >
                             Questionnaires
                         </a>
-
+                        <a
+                            href="{{ route(
+                                'admin.users.sessions',
+                                $user['id']
+                            ) }}"
+                            class="
+                                px-3
+                                py-1
+                                rounded-lg
+                                bg-purple-100
+                                text-purple-700
+                            "
+                        >
+                            Historique sessions
+                        </a>
                     </td>
 
                 </tr>
