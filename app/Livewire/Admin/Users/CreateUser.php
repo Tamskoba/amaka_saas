@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Admin\Users;
 
+use App\Mail\UserCreatedMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class CreateUser extends Component
@@ -19,8 +22,6 @@ class CreateUser extends Component
     public string $city = '';
 
     public string $country = '';
-
-    public string $password = '';
 
     public string $role = 'client';
 
@@ -42,13 +43,31 @@ class CreateUser extends Component
 
             'country' => 'nullable|max:100',
 
-            'password' => 'required|min:8',
-
             'role' => 'required',
 
         ]);
 
-        User::create([
+        /*
+        |--------------------------------------------------------------------------
+        | Génération du mot de passe temporaire
+        |--------------------------------------------------------------------------
+        */
+
+        $temporaryPassword = Str::password(
+            length: 12,
+            letters: true,
+            numbers: true,
+            symbols: true,
+            spaces: false
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Création de l'utilisateur
+        |--------------------------------------------------------------------------
+        */
+
+        $user = User::create([
 
             'first_name' => $this->first_name,
 
@@ -63,7 +82,7 @@ class CreateUser extends Component
             'country' => $this->country,
 
             'password' => Hash::make(
-                $this->password
+                $temporaryPassword
             ),
 
             'role' => $this->role,
@@ -76,9 +95,29 @@ class CreateUser extends Component
 
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Envoi des identifiants par email
+        |--------------------------------------------------------------------------
+        */
+
+        Mail::to($user->email)
+            ->send(
+                new UserCreatedMail(
+                    $user,
+                    $temporaryPassword
+                )
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Confirmation
+        |--------------------------------------------------------------------------
+        */
+
         session()->flash(
             'success',
-            'Utilisateur créé.'
+            'Utilisateur créé et identifiants envoyés par email.'
         );
 
         $this->redirectRoute(
@@ -89,6 +128,6 @@ class CreateUser extends Component
     public function render()
     {
         return view('livewire.admin.users.create-user')
-        ->layout('components.layouts.admin');
+            ->layout('components.layouts.admin');
     }
 }
