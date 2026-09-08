@@ -394,34 +394,6 @@ new class extends Component
             </form>
 
             {{-- FOOTER --}}
-            <div
-                class="
-                    mt-10
-                    pt-8
-                    border-t
-                    border-[#EEE3D7]
-                    text-center
-                    text-[#6D5245]
-                "
-            >
-
-                <p class="mb-2">
-                    Pas encore de compte ?
-                </p>
-
-                <a
-                    href="/register"
-                    class="
-                        text-[#C9822B]
-                        font-medium
-                        hover:text-[#B87424]
-                        transition
-                    "
-                >
-                    Créer un compte
-                </a>
-
-            </div>
 
         </div>
 

@@ -53,13 +53,15 @@ class CreateUser extends Component
         |--------------------------------------------------------------------------
         */
 
-        $temporaryPassword = Str::password(
-            length: 12,
-            letters: true,
-            numbers: true,
-            symbols: true,
-            spaces: false
-        );
+        // $temporaryPassword = Str::password(
+        //     length: 12,
+        //     letters: true,
+        //     numbers: true,
+        //     symbols: true,
+        //     spaces: false
+        // );
+
+        $temporaryPassword = $this->generateTemporaryPassword();
 
         /*
         |--------------------------------------------------------------------------
@@ -123,6 +125,32 @@ class CreateUser extends Component
         $this->redirectRoute(
             'admin.users.index'
         );
+    }
+
+    private function generateTemporaryPassword(): string
+    {
+        $letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $symbols = '!@#$&';
+
+        $password = [
+            $letters[random_int(0, strlen($letters) - 1)],
+            $letters[random_int(0, strlen($letters) - 1)],
+            $letters[random_int(0, strlen($letters) - 1)],
+            $letters[random_int(0, strlen($letters) - 1)],
+            $letters[random_int(0, strlen($letters) - 1)],
+            $letters[random_int(0, strlen($letters) - 1)],
+            $numbers[random_int(0, strlen($numbers) - 1)],
+            $numbers[random_int(0, strlen($numbers) - 1)],
+            $symbols[random_int(0, strlen($symbols) - 1)],
+            $symbols[random_int(0, strlen($symbols) - 1)],
+            $letters[random_int(0, strlen($letters) - 1)],
+            $numbers[random_int(0, strlen($numbers) - 1)],
+        ];
+
+        shuffle($password);
+
+        return implode('', $password);
     }
 
     public function render()
