@@ -86,13 +86,6 @@
                 class="rounded-lg"
             >
 
-            <input
-                type="password"
-                wire:model="password"
-                placeholder="Mot de passe"
-                class="rounded-lg"
-            >
-
             <select
                 wire:model="role"
                 class="rounded-lg"
