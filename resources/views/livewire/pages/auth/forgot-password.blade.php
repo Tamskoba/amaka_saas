@@ -44,8 +44,8 @@ new #[Layout('layouts.guest')] class extends Component
         min-h-screen
         grid
         lg:grid-cols-2
-        bg-[#F5EFE9]
     "
+    style="background-color: #F7F1ED;"    
 >
 
     {{-- LEFT SIDE --}}
@@ -291,6 +291,7 @@ new #[Layout('layouts.guest')] class extends Component
                     @enderror
 
                 </div>
+                <br>
 
                 {{-- BUTTON --}}
                 <button
@@ -300,7 +301,7 @@ new #[Layout('layouts.guest')] class extends Component
                         rounded-2xl
                         bg-[#C9822B]
                         hover:bg-[#B87424]
-                        text-black
+                        text-white
                         py-5
                         text-lg
                         font-medium
@@ -309,6 +310,7 @@ new #[Layout('layouts.guest')] class extends Component
                         shadow-lg
                         hover:shadow-xl
                     "
+                    style="background-color: #bb7229;padding-top: 10px;padding-bottom :10px"
                 >
                     Envoyer le lien →
                 </button>

@@ -10,7 +10,6 @@
     {{-- TERMINÉS --}}
     <div
         class="
-            bg-white
             rounded-[32px]
             p-8
             shadow-[0_10px_40px_rgba(0,0,0,0.04)]
@@ -43,7 +42,6 @@
     {{-- EN COURS --}}
     <div
         class="
-            bg-white
             rounded-[32px]
             p-8
             shadow-[0_10px_40px_rgba(0,0,0,0.04)]
@@ -76,7 +74,6 @@
     {{-- RESTANTS --}}
     <div
         class="
-            bg-white
             rounded-[32px]
             p-8
             shadow-[0_10px_40px_rgba(0,0,0,0.04)]

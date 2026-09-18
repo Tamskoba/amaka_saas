@@ -13,6 +13,9 @@
         top-0
         z-20
     "
+    style="
+        background-color: #F7F1ED;
+    " 
 >
 
     <div>

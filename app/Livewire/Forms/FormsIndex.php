@@ -3,78 +3,136 @@
 namespace App\Livewire\Forms;
 
 use App\Models\Form;
-use Illuminate\Support\Facades\Redirect;
+use App\Models\ResponseSet;
+use App\Models\UserSession;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class FormsIndex extends Component
 {
-    public $forms = [];
+    public array $forms = [];
 
     public function mount(): void
     {
-        $this->forms = Form::whereHas(
+        $user = Auth::user();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Aucun utilisateur connecté
+        |--------------------------------------------------------------------------
+        */
+
+        if (! $user) {
+            $this->forms = [];
+
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Session active
+        |--------------------------------------------------------------------------
+        */
+
+        $session = UserSession::firstOrCreate(
+            [
+                'user_id' => $user->id,
+                'status' => 'active',
+            ],
+            [
+                'session_number' => 1,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Questionnaires assignés et visibles
+        |--------------------------------------------------------------------------
+        */
+
+        $assignedForms = Form::whereHas(
             'users',
-
-            function ($query) {
-
+            function ($query) use ($user) {
                 $query
-
-                    ->where('user_id', Auth::id())
-
+                    ->where('user_id', $user->id)
                     ->where('is_visible', true);
-
             }
-
         )
+        ->where('is_active', 1)
+        ->where('is_deleted', 0)
+        ->get();
 
-        ->with(['responseSets' => function ($query) {
+        /*
+        |--------------------------------------------------------------------------
+        | Construction de la liste avec le bon statut
+        |--------------------------------------------------------------------------
+        */
 
-            $query->where(
+        $this->forms = $assignedForms
+            ->map(function ($form) use ($user, $session) {
 
-                'user_id',
+                /*
+                |--------------------------------------------------------------------------
+                | Réponse du questionnaire pour la session active
+                |--------------------------------------------------------------------------
+                */
 
-                Auth::id()
+                $response = ResponseSet::where('user_id', $user->id)
+                    ->where('form_id', $form->id)
+                    ->where('session_id', $session->id)
+                    ->first();
 
-            );
+                /*
+                |--------------------------------------------------------------------------
+                | Détermination du statut normalisé
+                |--------------------------------------------------------------------------
+                */
 
-        }])
+                if (! $response) {
+                    $status = 'not_started';
+                } else {
+                    $status = match ($response->status) {
+                        'completed' => 'completed',
 
-        ->get()
+                        'progress',
+                        'in_progress' => 'in_progress',
 
-        ->map(function ($form) {
+                        'new',
+                        'not_started' => 'not_started',
 
-            $response = $form
+                        default => 'not_started',
+                    };
+                }
 
-                ->responseSets
+                return [
+                    'id' => $form->id,
 
-                ->first();
+                    'title' => $form->title,
 
-            return [
+                    'description' => $form->description,
 
-                'id' => $form->id,
+                    'status' => $status,
 
-                'title' => $form->title,
+                    'progress' => $response?->progress ?? 0,
 
-                'description' => $form->description,
+                    'updated_at' => $response?->updated_at ?? $form->updated_at,
+                ];
+            })
+            ->values()
+            ->toArray();
 
-                'status' => $response->status ?? 'not_started',
+        /*
+        |--------------------------------------------------------------------------
+        | Debug temporaire
+        |--------------------------------------------------------------------------
+        */
 
-                'progress' => $response->progress ?? 0,
-
-                'updated_at' => $response->updated_at ?? now(),
-
-            ];
-
-        });
+        // dd($this->forms);
     }
 
     public function render()
     {
-        return view(
-            'livewire.forms.forms-index'
-        );
+        return view('livewire.forms.forms-index');
     }
 
     public function openForm(int $formId)
@@ -83,5 +141,5 @@ class FormsIndex extends Component
             'forms.run',
             $formId
         );
-    }   
+    }
 }

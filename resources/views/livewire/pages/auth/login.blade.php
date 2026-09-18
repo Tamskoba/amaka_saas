@@ -47,6 +47,9 @@ new class extends Component
         lg:grid-cols-2
         bg-[#F5EFE9]
     "
+    style="
+        background-color: #F7F1ED;
+    "     
 >
 
     {{-- LEFT SIDE --}}
@@ -259,7 +262,9 @@ new class extends Component
 
                     @error('email')
 
-                        <p class="mt-2 text-sm text-red-500">
+                        <p class="mt-2 text-sm text-red-500"
+                            style="color: red;"
+                        >
                             {{ $message }}
                         </p>
 
@@ -308,7 +313,9 @@ new class extends Component
 
                     @error('password')
 
-                        <p class="mt-2 text-sm text-red-500">
+                        <p class="mt-2 text-sm text-red-500"
+                           style="color: red;"
+                        >
                             {{ $message }}
                         </p>
 
@@ -378,7 +385,7 @@ new class extends Component
                         rounded-2xl
                         bg-[#C9822B]
                         hover:bg-[#B87424]
-                        text-black
+                        text-white
                         py-5
                         text-lg
                         font-medium
@@ -387,6 +394,7 @@ new class extends Component
                         shadow-lg
                         hover:shadow-xl
                     "
+                    style="background-color: #bb7229;padding-top: 10px;padding-bottom :10px"             
                 >
                     Se connecter →
                 </button>

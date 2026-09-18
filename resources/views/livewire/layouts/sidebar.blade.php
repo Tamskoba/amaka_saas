@@ -9,6 +9,9 @@
         flex-col
         min-h-screen
     "
+    style="
+        background-color: #F7F1ED;
+    "     
 >
 
     {{-- LOGO --}}

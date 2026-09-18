@@ -29,7 +29,7 @@
         rel="stylesheet">
 </head>
 
-<body class="bg-background text-primary font-body">
+<body class="text-primary font-body" style="background-color: #F7F1ED;">
 
     <div class="flex min-h-screen">
 

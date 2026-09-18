@@ -1,37 +1,306 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =========================================================
+   AMAKA NUTRITION — DESIGN SYSTEM
+   ========================================================= */
+
 :root {
+    /* Couleurs principales */
+    --amaka-brown: #513328;
+    --amaka-brown-dark: #3B2923;
+    --amaka-orange: #D58224;
+    --amaka-orange-dark: #B96818;
 
-    --amaka-primary: #4B2E1F;
-
-    --amaka-secondary: #C87A2A;
-
-    --amaka-bg: #F7F2EE;
-
+    /* Fonds */
+    --amaka-bg: #FAF5F0;
+    --amaka-pink: #F2E5DF;
     --amaka-card: #FFFFFF;
 
-    --amaka-border: #EADFD3;
+    /* Texte */
+    --amaka-text: #3B2923;
+    --amaka-text-soft: #6B5145;
+    --amaka-text-muted: #8A756A;
 
-    --amaka-text: #6B4A3A;
+    /* Bordures */
+    --amaka-border: #E5D5CA;
 
+    /* États */
+    --amaka-success: #65745F;
+    --amaka-success-bg: #EDF2EA;
+
+    --amaka-warning: #D58224;
+    --amaka-warning-bg: #FDF1E2;
+
+    /* Ombres */
+    --amaka-shadow: 0 8px 30px rgba(81, 51, 40, 0.08);
+    --amaka-shadow-hover: 0 12px 35px rgba(81, 51, 40, 0.13);
 }
 
-.amaka-btn-primary {
 
-    background:#C87A2A;
+/* =========================================================
+   BASE
+   ========================================================= */
 
-    color:white;
+@layer base {
 
-    border-radius:14px;
+    body {
+        background-color: var(--amaka-bg);
+        color: var(--amaka-text);
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
 
-    padding:12px 24px;
+    h1,
+    h2,
+    h3 {
+        color: var(--amaka-brown-dark);
+    }
 
-    transition:.2s;
+    button,
+    a {
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease,
+            border-color 0.2s ease,
+            box-shadow 0.2s ease,
+            transform 0.2s ease;
+    }
 }
 
-.amaka-btn-primary:hover {
 
-    background:#B36C22;
+/* =========================================================
+   COMPOSANTS AMAKA
+   ========================================================= */
 
+@layer components {
+
+    /* -----------------------------------------------------
+       BOUTON PRINCIPAL
+       ----------------------------------------------------- */
+
+    .amaka-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+
+        background-color: var(--amaka-orange);
+        color: white;
+
+        border-radius: 12px;
+        padding: 11px 22px;
+
+        font-weight: 600;
+        font-size: 14px;
+
+        box-shadow: 0 4px 12px rgba(213, 130, 36, 0.20);
+    }
+
+    .amaka-btn-primary:hover {
+        background-color: var(--amaka-orange-dark);
+
+        box-shadow: 0 6px 16px rgba(213, 130, 36, 0.28);
+
+        transform: translateY(-1px);
+    }
+
+
+    /* -----------------------------------------------------
+       BOUTON SECONDAIRE
+       ----------------------------------------------------- */
+
+    .amaka-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        background-color: white;
+        color: var(--amaka-brown);
+
+        border: 1px solid var(--amaka-border);
+        border-radius: 12px;
+
+        padding: 11px 22px;
+
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .amaka-btn-secondary:hover {
+        background-color: var(--amaka-pink);
+        border-color: var(--amaka-orange);
+    }
+
+
+    /* -----------------------------------------------------
+       CARTE
+       ----------------------------------------------------- */
+
+    .amaka-card {
+        background-color: var(--amaka-card);
+
+        border: 1px solid var(--amaka-border);
+
+        border-radius: 18px;
+
+        box-shadow: var(--amaka-shadow);
+
+        transition:
+            box-shadow 0.2s ease,
+            transform 0.2s ease;
+    }
+
+    .amaka-card:hover {
+        box-shadow: var(--amaka-shadow-hover);
+    }
+
+
+    /* -----------------------------------------------------
+       CARTE MISE EN AVANT
+       ----------------------------------------------------- */
+
+    .amaka-card-featured {
+        background-color: var(--amaka-brown);
+        color: white;
+
+        border-radius: 18px;
+
+        box-shadow: var(--amaka-shadow);
+    }
+
+
+    /* -----------------------------------------------------
+       BADGE
+       ----------------------------------------------------- */
+
+    .amaka-badge {
+        display: inline-flex;
+        align-items: center;
+
+        border-radius: 9999px;
+
+        padding: 4px 10px;
+
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+
+    .amaka-badge-warning {
+        background-color: var(--amaka-warning-bg);
+        color: var(--amaka-orange-dark);
+    }
+
+
+    .amaka-badge-success {
+        background-color: var(--amaka-success-bg);
+        color: var(--amaka-success);
+    }
+
+
+    /* -----------------------------------------------------
+       PROGRESSION
+       ----------------------------------------------------- */
+
+    .amaka-progress {
+        width: 100%;
+        height: 7px;
+
+        background-color: var(--amaka-pink);
+
+        border-radius: 9999px;
+
+        overflow: hidden;
+    }
+
+
+    .amaka-progress-bar {
+        height: 100%;
+
+        background-color: var(--amaka-orange);
+
+        border-radius: 9999px;
+
+        transition: width 0.4s ease;
+    }
+
+
+    /* -----------------------------------------------------
+       SIDEBAR
+       ----------------------------------------------------- */
+
+    .amaka-sidebar {
+        background-color: var(--amaka-brown);
+        color: white;
+    }
+
+
+    .amaka-sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        padding: 11px 14px;
+
+        border-radius: 10px;
+
+        color: rgba(255, 255, 255, 0.78);
+
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+
+    .amaka-sidebar-link:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: white;
+    }
+
+
+    .amaka-sidebar-link.active {
+        background-color: var(--amaka-pink);
+        color: var(--amaka-brown);
+    }
+
+
+    /* -----------------------------------------------------
+       TITRES
+       ----------------------------------------------------- */
+
+    .amaka-title {
+        color: var(--amaka-brown-dark);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+
+
+    .amaka-subtitle {
+        color: var(--amaka-text-soft);
+    }
+
+
+    /* -----------------------------------------------------
+       SECTION DOUCE
+       ----------------------------------------------------- */
+
+    .amaka-soft-section {
+        background-color: var(--amaka-pink);
+        border-radius: 20px;
+    }
+
+    .amaka-questionnaire-card {
+        background-color: red;
+        border: 1px solid #efc0a9;
+        box-shadow: 0 8px 25px rgba(81, 51, 40, 0.12);
+    }
+}
+
+@layer components {
+
+
+    .amaka-questionnaire-card:hover {
+        border-color: #B96818;
+        box-shadow: 0 14px 35px rgba(81, 51, 40, 0.18);
+    }
 }
