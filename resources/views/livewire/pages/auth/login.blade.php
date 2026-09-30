@@ -20,13 +20,31 @@ new #[Layout('components.layouts.guest')] class extends Component
             'password' => ['required'],
         ]);
 
+        // Vérification du compte
+        $user = \App\Models\User::where('email', $this->email)->first();
+
+        // Compte inexistant
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'email' => "L’adresse e-mail ou le mot de passe est incorrect.",
+            ]);
+        }
+
+        // Compte existant mais désactivé
+        if (!$user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => "Votre compte est actuellement désactivé. Veuillez contacter l’administrateur ou votre spécialiste pour réactiver votre accès.",
+            ]);
+        }
+
+        // Vérification du mot de passe
         if (! Auth::attempt([
             'email' => $this->email,
             'password' => $this->password,
         ], $this->remember)) {
 
             throw ValidationException::withMessages([
-                'email' => 'Identifiants incorrects.',
+                'email' => "L’adresse e-mail ou le mot de passe est incorrect.",
             ]);
         }
 
