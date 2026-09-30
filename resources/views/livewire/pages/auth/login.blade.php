@@ -156,6 +156,10 @@ new #[Layout('components.layouts.guest')] class extends Component
                             text-sm
                             text-red-500
                         "
+                        style="
+                            color: #ff0000;
+                            font-weight:bold;
+                        "
                     >
                         {{ $message }}
                     </p>
@@ -211,6 +215,10 @@ new #[Layout('components.layouts.guest')] class extends Component
                             text-sm
                             text-red-500
                         "
+                        style="
+                            color: #ff0000;
+                            font-weight:bold;
+                        "                        
                     >
                         {{ $message }}
                     </p>
