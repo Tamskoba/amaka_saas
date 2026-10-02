@@ -15,18 +15,14 @@ class UserForm extends Model
         'status',
         'progress_percentage',
         'assigned_by',
-        'assigned_at'
+        'assigned_at',
+        'is_visible',
     ];
 
     protected $casts = [
         'assigned_at' => 'datetime',
+        'is_visible' => 'boolean',
     ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONS
-    |--------------------------------------------------------------------------
-    */
 
     public function user()
     {
