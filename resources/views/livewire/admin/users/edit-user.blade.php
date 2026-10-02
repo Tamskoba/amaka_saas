@@ -14,7 +14,6 @@
         class="
             max-w-2xl
             mx-auto
-            bg-white
             rounded-xl
             border
             p-6
@@ -78,28 +77,20 @@
             </div>
 
             <div>
-
-                <label
-                    class="
-                        block
-                        mb-1
-                        font-medium
-                    "
-                >
-                    Email
-                </label>
+                <label class="block mb-1 font-medium">Email</label>
 
                 <input
                     type="email"
                     wire:model="email"
-                    class="
-                        w-full
-                        rounded-lg
-                    "
+                    class="w-full rounded-lg @error('email') border-red-500 @enderror"
                 >
 
+                @error('email')
+                    <p class="mt-1 text-sm text-red-600">
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
-
             <div>
 
                 <label
@@ -261,17 +252,63 @@
             </div>
 
             <div
-                class="mt-6 text-center"
+                class="
+                    mt-8
+                    pt-6
+                    border-t
+                    border-[#EADFD3]
+                    flex
+                    items-center
+                    justify-between
+                    gap-4
+                "
             >
 
+                {{-- ANNULER --}}
                 <button
-                    wire:click="save"
+                    type="button"
+                    wire:click="cancel"
                     class="
                         px-5
                         py-3
-                        rounded-lg
+                        rounded-xl
+                        border
+                        border-[#EADFD3]
+                        text-[#6B4A3A]
+                        hover:bg-[#F7F2EE]
+                        transition
+                        font-medium
+                    "
+                    style="
+                        background-color: #ff0000;
+                        padding-top: 10px;
+                        padding-bottom: 10px;
+                        color : #ffffff;
+                    "
+                >
+                    Annuler
+                </button>
+
+
+                {{-- ENREGISTRER --}}
+                <button
+                    type="button"
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    class="
+                        px-5
+                        py-3
+                        rounded-xl
                         bg-[#C87A2A]
-                        text-black
+                        text-white
+                        font-medium
+                        hover:bg-[#B36C22]
+                        transition
+                    "
+                    style="
+                        background-color: #BB7229;
+                        padding-top: 10px;
+                        padding-bottom: 10px;
                     "
                 >
                     Enregistrer les modifications

@@ -82,16 +82,23 @@ class CreateUser extends Component
             return;
         }
 
-        $this->validate([
-            'first_name' => 'required|max:100',
-            'last_name' => 'required|max:100',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|max:50',
-            'city' => 'nullable|max:100',
-            'country' => 'nullable|max:100',
-            'role' => 'required|in:client,micronutritionist,admin',
-            'is_active' => 'boolean',
-        ]);
+        $this->validate(
+            [
+                'first_name' => 'required|max:100',
+                'last_name' => 'required|max:100',
+                'email' => 'required|email|unique:users,email',
+                'phone' => 'nullable|max:50',
+                'city' => 'nullable|max:100',
+                'country' => 'nullable|max:100',
+                'role' => 'required|in:client,micronutritionist,admin',
+                'is_active' => 'boolean',
+            ],
+            [
+                'email.unique' => 'Cette adresse email est déjà utilisée. Veuillez utiliser une autre adresse email.',
+                'email.required' => 'L’adresse email est obligatoire.',
+                'email.email' => 'Veuillez saisir une adresse email valide.',
+            ]
+        );
 
         /*
         |--------------------------------------------------------------------------
