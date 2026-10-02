@@ -86,7 +86,7 @@ class CreateUser extends Component
             [
                 'first_name' => 'required|max:100',
                 'last_name' => 'required|max:100',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email:rfc,dns|unique:users,email',
                 'phone' => 'nullable|max:50',
                 'city' => 'nullable|max:100',
                 'country' => 'nullable|max:100',
