@@ -13,11 +13,15 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login');
         }
 
-        if (auth()->user()->role !== 'admin') {
+        if (! in_array(
+            auth()->user()->role,
+            ['admin', 'micronutritionist'],
+            true
+        )) {
             abort(403, 'Accès non autorisé.');
         }
 

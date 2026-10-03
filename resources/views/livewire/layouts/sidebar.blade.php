@@ -124,6 +124,7 @@
 
             auth()->user()->role === 'admin'
             || auth()->user()->role === 'super_admin'
+            || auth()->user()->role === 'micronutritionist'
         )
 
             <a

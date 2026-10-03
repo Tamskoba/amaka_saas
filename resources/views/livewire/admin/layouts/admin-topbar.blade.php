@@ -14,7 +14,26 @@
         z-20
     "
 >
+    @php
+        $user = auth()->user();
 
+        $roleLabel = match ($user?->role) {
+            'admin' => 'Administrateur',
+            'micronutritionist' => 'Micronutritionniste',
+            'super_admin' => 'Super administrateur',
+            default => 'Utilisateur',
+        };
+
+        $dashboardTitle = match ($user?->role) {
+            'admin' => 'Dashboard Administrateur',
+            'micronutritionist' => 'Dashboard Micronutritionniste',
+            'super_admin' => 'Dashboard Super administrateur',
+            default => 'Dashboard',
+        };
+    @endphp
+
+
+    {{-- TITRE --}}
     <div>
 
         <h2
@@ -25,7 +44,7 @@
                 font-semibold
             "
         >
-            Dashboard Administrateur
+            {{ $dashboardTitle }}
         </h2>
 
         <p
@@ -40,6 +59,8 @@
 
     </div>
 
+
+    {{-- PROFIL --}}
     <div
         class="
             flex
@@ -48,7 +69,6 @@
         "
     >
 
-        {{-- PROFIL --}}
         <div
             class="
                 text-right
@@ -61,11 +81,16 @@
                     text-[#4B2E1F]
                 "
             >
+
                 @auth
+
                     {{ auth()->user()->first_name }}
                     {{ auth()->user()->last_name }}
+
                 @endauth
+
             </div>
+
 
             <div
                 class="
@@ -73,10 +98,11 @@
                     text-[#6B4A3A]
                 "
             >
-                Administrateur
+                {{ $roleLabel }}
             </div>
 
         </div>
+
 
         {{-- AVATAR --}}
         <div
@@ -93,10 +119,21 @@
                 shadow-md
             "
         >
+
             @auth
-                {{ strtoupper(substr(auth()->user()->first_name,0,1)) }}
+
+                {{ strtoupper(
+                    substr(
+                        auth()->user()->first_name,
+                        0,
+                        1
+                    )
+                ) }}
+
             @endauth
+
         </div>
+
 
         {{-- BOUTON DECONNEXION --}}
         <form
@@ -123,6 +160,7 @@
                     transition-all
                 "
             >
+
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="w-5 h-5"
@@ -139,6 +177,7 @@
                 </svg>
 
                 Déconnexion
+
             </button>
 
         </form>
