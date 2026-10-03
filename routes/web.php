@@ -132,104 +132,106 @@ Route::middleware(['auth'])->group(function () {
     | ADMINISTRATION
     |--------------------------------------------------------------------------
     |
-    | Pour le moment, ces routes nécessitent seulement d'être connecté.
-    | La protection spécifique au rôle "admin" pourra être ajoutée
-    | séparément.
+    | Ces routes nécessitent :
+    | 1. que l'utilisateur soit authentifié ;
+    | 2. que son rôle soit "admin".
     |
     */
 
-    Route::prefix('admin')->group(function () {
+    Route::middleware(['admin'])
+        ->prefix('admin')
+        ->group(function () {
 
-        /*
-        |----------------------------------------------------------------------
-        | Dashboard administrateur
-        |----------------------------------------------------------------------
-        */
+            /*
+            |--------------------------------------------------------------------------
+            | Dashboard administrateur
+            |--------------------------------------------------------------------------
+            */
 
-        Route::get(
-            '/dashboard',
-            AdminDashboard::class
-        )->name('admin.dashboard');
-
-
-        /*
-        |----------------------------------------------------------------------
-        | Gestion des questionnaires
-        |----------------------------------------------------------------------
-        */
-
-        Route::get(
-            '/forms',
-            AdminFormsIndex::class
-        )->name('admin.forms');
+            Route::get(
+                '/dashboard',
+                AdminDashboard::class
+            )->name('admin.dashboard');
 
 
-        Route::get(
-            '/forms/create',
-            FormCreate::class
-        )->name('admin.forms.create');
+            /*
+            |--------------------------------------------------------------------------
+            | Gestion des questionnaires
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get(
+                '/forms',
+                AdminFormsIndex::class
+            )->name('admin.forms');
 
 
-        Route::get(
-            '/forms/{form}/edit',
-            FormEdit::class
-        )->name('admin.forms.edit');
+            Route::get(
+                '/forms/create',
+                FormCreate::class
+            )->name('admin.forms.create');
 
 
-        Route::get(
-            '/forms/import',
-            FormImport::class
-        )->name('admin.forms.import');
+            Route::get(
+                '/forms/{form}/edit',
+                FormEdit::class
+            )->name('admin.forms.edit');
 
 
-        /*
-        |----------------------------------------------------------------------
-        | Corbeille
-        |----------------------------------------------------------------------
-        */
-
-        Route::get(
-            '/trash',
-            TrashIndex::class
-        )->name('admin.trash.index');
+            Route::get(
+                '/forms/import',
+                FormImport::class
+            )->name('admin.forms.import');
 
 
-        /*
-        |----------------------------------------------------------------------
-        | Gestion des utilisateurs
-        |----------------------------------------------------------------------
-        */
+            /*
+            |--------------------------------------------------------------------------
+            | Corbeille
+            |--------------------------------------------------------------------------
+            */
 
-        Route::get(
-            '/users',
-            UsersIndex::class
-        )->name('admin.users.index');
-
-
-        Route::get(
-            '/users/create',
-            CreateUser::class
-        )->name('admin.users.create');
+            Route::get(
+                '/trash',
+                TrashIndex::class
+            )->name('admin.trash.index');
 
 
-        Route::get(
-            '/users/{user}/edit',
-            EditUser::class
-        )->name('admin.users.edit');
+            /*
+            |--------------------------------------------------------------------------
+            | Gestion des utilisateurs
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get(
+                '/users',
+                UsersIndex::class
+            )->name('admin.users.index');
 
 
-        Route::get(
-            '/users/{user}/forms',
-            AssignForms::class
-        )->name('admin.users.forms');
+            Route::get(
+                '/users/create',
+                CreateUser::class
+            )->name('admin.users.create');
 
 
-        Route::get(
-            '/users/{user}/sessions',
-            UserSessionHistory::class
-        )->name('admin.users.sessions');
+            Route::get(
+                '/users/{user}/edit',
+                EditUser::class
+            )->name('admin.users.edit');
 
-    });
+
+            Route::get(
+                '/users/{user}/forms',
+                AssignForms::class
+            )->name('admin.users.forms');
+
+
+            Route::get(
+                '/users/{user}/sessions',
+                UserSessionHistory::class
+            )->name('admin.users.sessions');
+
+        });
 
 });
 
