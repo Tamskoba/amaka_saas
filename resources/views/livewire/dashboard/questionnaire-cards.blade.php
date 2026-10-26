@@ -1,368 +1,545 @@
-<div>
+<div class="space-y-8">
+
     {{-- =========================================================
-         GRID DES QUESTIONNAIRES
+         STATISTIQUES
     ========================================================== --}}
-    <div class="
-            grid
-            grid-cols-1
-            md:grid-cols-3
-            gap-6
-        "
-    >
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        @foreach($forms as $form)
-
-            {{-- =================================================
-                 CARD QUESTIONNAIRE
-            ================================================== --}}
-            <article
-                class="
-                    amaka-questionnaire-card
-                    group
-                    flex
-                    h-full
-                    min-h-[440px]
-                    flex-col
-                    overflow-hidden
-                    rounded-[24px]
-                    p-6
-                    shadow-[0_8px_25px_rgba(81,51,40,0.12)]
-                    transition-all
-                    duration-300
-                    hover:-translate-y-1
-                    hover:border-[#B96818]
-                    hover:shadow-[0_14px_35px_rgba(81,51,40,0.18)]
-                "
-                style="
-                    background-color: #F3E9E4;
-                    border: 1px solid #efc0a9;
-                    border-radius: 10px;
-                "
-            >
-
-                {{-- =============================================
-                     EN-TÊTE
-                ============================================== --}}
-                <div class="flex min-h-[48px] items-start justify-between gap-4">
-
-                    {{-- ICÔNE --}}
-                    @if($form['status'] === 'completed')
-
-                        <div
-                            class="
-                                flex
-                                h-12
-                                w-12
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-2xl
-                                bg-[#EDF2EA]
-                                text-xl
-                                font-semibold
-                                text-[#53654C]
-                            "
-                        >
-                            ✓
-                        </div>
-
-                    @elseif($form['status'] === 'in_progress')
-
-                        <div
-                            class="
-                                flex
-                                h-12
-                                w-12
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-2xl
-                                bg-[#FFF0DD]
-                                text-xl
-                                font-semibold
-                                text-[#B96818]
-                            "
-                        >
-                            ◐
-                        </div>
-
-                    @else
-
-                        <div
-                            class="
-                                flex
-                                h-12
-                                w-12
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-2xl
-                                bg-[#F2E5DF]
-                                text-xl
-                                font-semibold
-                                text-[#513328]
-                            "
-                        >
-                            +
-                        </div>
-
-                    @endif
-
-                    {{-- BADGE --}}
-                    @if($form['status'] === 'completed')
-
-                        <span
-                            class="
-                                amaka-badge
-                                whitespace-nowrap
-                                bg-[#EDF2EA]
-                                text-[#53654C]
-                            "
-                        >
-                            ✓ Terminé
-                        </span>
-
-                    @elseif($form['status'] === 'in_progress')
-
-                        <span
-                            class="
-                                amaka-badge
-                                whitespace-nowrap
-                                bg-[#FFF0DD]
-                                text-[#B96818]
-                            "
-                        >
-                            En cours
-                        </span>
-
-                    @else
-
-                        <span
-                            class="
-                                amaka-badge
-                                whitespace-nowrap
-                                bg-[#F7ECE6]
-                                text-[#513328]
-                            "
-                        >
-                            À commencer
-                        </span>
-
-                    @endif
-
-                </div>
-
-
-                {{-- =================================================
-                     CONTENU
-                ================================================== --}}
-                <div class="mt-6">
-
-                    {{-- TITRE --}}
-                    <h3
-                        class="
-                            min-h-[56px]
-                            line-clamp-2
-                            font-['Playfair_Display']
-                            text-xl
-                            font-semibold
-                            leading-snug
-                            text-[#3B2923]
-                        "
-                    >
-                        {{ $form['title'] }}
-                    </h3>
-
-                    {{-- DESCRIPTION --}}
+        {{-- Total --}}
+        <div
+            class="bg-white rounded-2xl p-6 shadow-sm border"
+            style="border-color: #eadfd3;"
+        >
+            <div class="flex items-center justify-between">
+                <div>
                     <p
-                        class="
-                            mt-3
-                            min-h-[84px]
-                            line-clamp-3
-                            text-sm
-                            leading-relaxed
-                            text-[#6B5145]
-                        "
+                        class="text-sm font-medium"
+                        style="color: #6d5245;"
                     >
-                        {{ $form['description'] }}
+                        Total
                     </p>
 
+                    <p
+                        class="text-3xl font-semibold mt-2"
+                        style="color: #4a2d21;"
+                    >
+                        {{ $totalAssigned }}
+                    </p>
                 </div>
 
+                <div
+                    class="w-12 h-12 rounded-full flex items-center justify-center"
+                    style="background-color: #f3e9e4;"
+                >
+                    <svg
+                        class="w-6 h-6"
+                        style="color: #c9822b;"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"
+                        />
+                    </svg>
+                </div>
+            </div>
+        </div>
 
-                {{-- =================================================
-                     ZONE BASSE : PROGRESSION + ACTION
-                ================================================== --}}
-                <div class="mt-auto">
+        {{-- Terminés --}}
+        <div
+            class="bg-white rounded-2xl p-6 shadow-sm border"
+            style="border-color: #eadfd3;"
+        >
+            <div class="flex items-center justify-between">
+                <div>
+                    <p
+                        class="text-sm font-medium"
+                        style="color: #6d5245;"
+                    >
+                        Terminés
+                    </p>
 
-                    {{-- =============================================
+                    <p
+                        class="text-3xl font-semibold mt-2"
+                        style="color: #4a2d21;"
+                    >
+                        {{ $completed }}
+                    </p>
+                </div>
+
+                <div
+                    class="w-12 h-12 rounded-full flex items-center justify-center"
+                    style="background-color: #e7f4ec;"
+                >
+                    <svg
+                        class="w-6 h-6 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"
+                        />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- En cours --}}
+        <div
+            class="bg-white rounded-2xl p-6 shadow-sm border"
+            style="border-color: #eadfd3;"
+        >
+            <div class="flex items-center justify-between">
+                <div>
+                    <p
+                        class="text-sm font-medium"
+                        style="color: #6d5245;"
+                    >
+                        En cours
+                    </p>
+
+                    <p
+                        class="text-3xl font-semibold mt-2"
+                        style="color: #4a2d21;"
+                    >
+                        {{ $inProgress }}
+                    </p>
+                </div>
+
+                <div
+                    class="w-12 h-12 rounded-full flex items-center justify-center"
+                    style="background-color: #fff3e5;"
+                >
+                    <svg
+                        class="w-6 h-6"
+                        style="color: #c9822b;"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <br>
+
+
+    {{-- =========================================================
+         QUESTIONNAIRES
+    ========================================================== --}}
+    @if(empty($forms))
+
+        <div
+            class="bg-white rounded-2xl p-10 text-center border shadow-sm"
+            style="border-color: #eadfd3;"
+        >
+            <div
+                class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4"
+                style="background-color: #f3e9e4;"
+            >
+                <svg
+                    class="w-8 h-8"
+                    style="color: #c9822b;"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"
+                    />
+                </svg>
+            </div>
+
+            <h3
+                class="text-xl font-semibold"
+                style="color: #4a2d21;"
+            >
+                Aucun questionnaire disponible
+            </h3>
+
+            <p
+                class="mt-2"
+                style="color: #6d5245;"
+            >
+                Aucun questionnaire ne vous a encore été assigné.
+            </p>
+        </div>
+
+    @else
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            @foreach($forms as $form)
+
+                <div
+                    class="
+                        bg-white
+                        rounded-2xl
+                        p-6
+                        shadow-sm
+                        border
+                        min-h-[440px]
+                        flex
+                        flex-col
+                    "
+                    style="border-color: #eadfd3;"
+                >
+
+                    {{-- =================================================
+                         EN-TÊTE + STATUT
+                    ================================================== --}}
+                    <div class="flex items-start justify-between gap-4">
+
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+
+                                @if($form['status'] === 'completed')
+
+                                    <span
+                                        class="
+                                            inline-flex
+                                            items-center
+                                            px-3
+                                            py-1
+                                            rounded-full
+                                            text-xs
+                                            font-medium
+                                        "
+                                        style="
+                                            background-color: #e7f4ec;
+                                            color: #2f7d4a;
+                                        "
+                                    >
+                                        <span
+                                            class="w-2 h-2 rounded-full bg-green-500 mr-2"
+                                        ></span>
+
+                                        Terminé
+                                    </span>
+
+                                @elseif($form['status'] === 'in_progress')
+
+                                    <span
+                                        class="
+                                            inline-flex
+                                            items-center
+                                            px-3
+                                            py-1
+                                            rounded-full
+                                            text-xs
+                                            font-medium
+                                        "
+                                        style="
+                                            background-color: #fff3e5;
+                                            color: #a85f16;
+                                        "
+                                    >
+                                        <span
+                                            class="w-2 h-2 rounded-full mr-2"
+                                            style="background-color: #c9822b;"
+                                        ></span>
+
+                                        En cours
+                                    </span>
+
+                                @else
+
+                                    <span
+                                        class="
+                                            inline-flex
+                                            items-center
+                                            px-3
+                                            py-1
+                                            rounded-full
+                                            text-xs
+                                            font-medium
+                                        "
+                                        style="
+                                            background-color: #f3e9e4;
+                                            color: #6d5245;
+                                        "
+                                    >
+                                        <span
+                                            class="w-2 h-2 rounded-full mr-2"
+                                            style="background-color: #9d8578;"
+                                        ></span>
+
+                                        À commencer
+                                    </span>
+
+                                @endif
+
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    {{-- =================================================
+                         CONTENU
+                    ================================================== --}}
+                    <div class="mt-5 flex-1">
+
+                        <h3
+                            class="
+                                text-xl
+                                font-heading
+                                font-semibold
+                                leading-tight
+                            "
+                            style="color: #4a2d21;"
+                        >
+                            {{ $form['title'] }}
+                        </h3>
+
+                        @if(!empty($form['description']))
+
+                            <p
+                                class="
+                                    mt-3
+                                    text-sm
+                                    leading-relaxed
+                                "
+                                style="color: #6d5245;"
+                            >
+                                {{ $form['description'] }}
+                            </p>
+
+                        @endif
+
+                    </div>
+
+
+                    {{-- =================================================
                          PROGRESSION
-                    ============================================== --}}
+                    ================================================== --}}
                     <div class="mt-6">
 
-                        <div class="mb-2 flex items-center justify-between">
+                        <div class="flex items-center justify-between mb-2">
 
                             <span
-                                class="
-                                    text-xs
-                                    font-medium
-                                    text-[#76594B]
-                                "
+                                class="text-sm font-medium"
+                                style="color: #6d5245;"
                             >
                                 Progression
                             </span>
 
                             <span
-                                class="
-                                    text-sm
-                                    font-semibold
-                                    text-[#3B2923]
-                                "
+                                class="text-sm font-semibold"
+                                style="color: #4a2d21;"
                             >
                                 {{ $form['progress'] }}%
                             </span>
 
                         </div>
 
-                        {{-- BARRE DE PROGRESSION --}}
                         <div
-                            class="
-                                h-2
-                                w-full
-                                overflow-hidden
-                                rounded-full
-                                bg-[#C8AA99]
-                            "
+                            class="w-full h-2 rounded-full overflow-hidden"
+                            style="background-color: #f3e9e4;"
                         >
                             <div
-                                class="
-                                    h-full
-                                    rounded-full
-                                    bg-[#B96818]
-                                    transition-all
-                                    duration-500
+                                class="h-full rounded-full transition-all duration-500"
+                                style="
+                                    width: {{ min(100, max(0, $form['progress'])) }}%;
+                                    background-color: #c9822b;
                                 "
-                                style="width: {{ $form['progress'] }}%"
                             ></div>
                         </div>
+
+                        @if($form['status'] === 'completed' && !empty($form['completed_at']))
+
+                            <p
+                                class="mt-2 text-xs"
+                                style="color: #8a7266;"
+                            >
+                                Terminé le
+                                {{ \Carbon\Carbon::parse($form['completed_at'])->format('d/m/Y') }}
+                            </p>
+
+                        @elseif($form['status'] === 'in_progress')
+
+                            <p
+                                class="mt-2 text-xs"
+                                style="color: #8a7266;"
+                            >
+                                Vous pouvez reprendre là où vous vous êtes arrêté.
+                            </p>
+
+                        @else
+
+                            <p
+                                class="mt-2 text-xs"
+                                style="color: #8a7266;"
+                            >
+                                Questionnaire non commencé
+                            </p>
+
+                        @endif
 
                     </div>
 
 
-                    {{-- =============================================
-                         ACTION
-                    ============================================== --}}
-                    <div class="mt-6">
+                    {{-- =================================================
+                         ACTIONS
+                    ================================================== --}}
+                    <div class="mt-6 flex items-center justify-center gap-3">
 
+                        {{-- QUESTIONNAIRE TERMINÉ --}}
                         @if($form['status'] === 'completed')
 
+                            {{-- Consulter --}}
                             <a
-                                href="{{ route('forms.run', $form['id']) }}"
+                                href="{{ route('forms.run', ['form' => $form['id']]) }}"
                                 class="
-                                    flex
+                                    inline-flex
                                     min-h-[48px]
-                                    w-full
                                     items-center
                                     justify-center
                                     gap-2
                                     rounded-xl
-                                    px-4
+                                    px-5
                                     py-3
-                                    text-center
                                     text-sm
                                     font-semibold
                                     text-white
-                                    shadow-[0_4px_10px_rgba(81,51,40,0.18)]
-                                    transition-all
+                                    transition
                                     duration-200
-                                    hover:bg-[#3B2923]
+                                    hover:opacity-90
+                                    hover:-translate-y-0.5
                                 "
                                 style="background-color: #bb7229;"
                             >
-                                <span>Voir le questionnaire</span>
+                                <span>Consulter</span>
 
                                 <span
-                                    class="
-                                        transition-transform
-                                        duration-200
-                                        group-hover:translate-x-1
-                                    "
+                                    class="transition-transform duration-200"
                                 >
                                     →
                                 </span>
                             </a>
 
-                        @elseif($form['status'] === 'in_progress')
 
+                            {{-- Modifier --}}
                             <a
-                                href="{{ route('forms.run', $form['id']) }}"
+                                href="{{ route('forms.run', [
+                                    'form' => $form['id'],
+                                    'edit' => 1
+                                ]) }}"
                                 class="
-                                    flex
+                                    inline-flex
                                     min-h-[48px]
-                                    w-full
                                     items-center
                                     justify-center
                                     gap-2
                                     rounded-xl
-                                    px-4
+                                    px-5
                                     py-3
-                                    text-center
+                                    text-sm
+                                    font-semibold
+                                    transition
+                                    duration-200
+                                    hover:-translate-y-0.5
+                                "
+                                style="
+                                    background-color: #f3e9e4;
+                                    color: #4a2d21;
+                                "
+                            >
+                                <span>Modifier</span>
+
+                                <span
+                                    class="transition-transform duration-200"
+                                >
+                                    ✎
+                                </span>
+                            </a>
+
+
+                        {{-- QUESTIONNAIRE EN COURS --}}
+                        @elseif($form['status'] === 'in_progress')
+
+                            <a
+                                href="{{ route('forms.run', [
+                                    'form' => $form['id']
+                                ]) }}"
+                                class="
+                                    inline-flex
+                                    min-h-[48px]
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                    rounded-xl
+                                    px-6
+                                    py-3
                                     text-sm
                                     font-semibold
                                     text-white
-                                    shadow-[0_4px_10px_rgba(185,104,24,0.20)]
-                                    transition-all
+                                    transition
                                     duration-200
-                                    hover:bg-[#9F5713]
+                                    hover:opacity-90
+                                    hover:-translate-y-0.5
                                 "
                                 style="background-color: #bb7229;"
                             >
                                 <span>Continuer</span>
 
                                 <span
-                                    class="
-                                        transition-transform
-                                        duration-200
-                                        group-hover:translate-x-1
-                                    "
+                                    class="transition-transform duration-200"
                                 >
                                     →
                                 </span>
                             </a>
 
+
+                        {{-- QUESTIONNAIRE NON COMMENCÉ --}}
                         @else
 
                             <a
-                                href="{{ route('forms.run', $form['id']) }}"
+                                href="{{ route('forms.run', [
+                                    'form' => $form['id']
+                                ]) }}"
                                 class="
-                                    flex
+                                    inline-flex
                                     min-h-[48px]
-                                    w-full
                                     items-center
                                     justify-center
                                     gap-2
                                     rounded-xl
-                                    px-4
+                                    px-6
                                     py-3
-                                    text-center
                                     text-sm
                                     font-semibold
                                     text-white
-                                    shadow-[0_4px_10px_rgba(81,51,40,0.18)]
-                                    transition-all
+                                    transition
                                     duration-200
-                                    hover:bg-[#3B2923]
+                                    hover:opacity-90
+                                    hover:-translate-y-0.5
                                 "
                                 style="background-color: #bb7229;"
                             >
                                 <span>Commencer</span>
 
                                 <span
-                                    class="
-                                        transition-transform
-                                        duration-200
-                                        group-hover:translate-x-1
-                                    "
+                                    class="transition-transform duration-200"
                                 >
                                     →
                                 </span>
@@ -374,9 +551,10 @@
 
                 </div>
 
-            </article>
+            @endforeach
 
-        @endforeach
+        </div>
 
-    </div>
+    @endif
+
 </div>

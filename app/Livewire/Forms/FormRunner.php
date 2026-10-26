@@ -34,21 +34,41 @@ class FormRunner extends Component
 
     public bool $isEditing = false;
 
-    protected QuestionnaireEngine $engine;
+    public string $editUrl = '';
 
-    /*
-    |--------------------------------------------------------------------------
-    | MOUNT
-    |--------------------------------------------------------------------------
-    */
+    protected QuestionnaireEngine $engine;
 
     public function mount(Form $form): void
     {
         $this->form = $form;
+       
+        // Mémoriser l'URL réelle de la page avant les requêtes Livewire.
+        $this->editUrl = request()->fullUrlWithQuery([
+            'edit' => 1,
+        ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Mode consultation / modification
+        |--------------------------------------------------------------------------
+        |
+        | Sans ?edit=1 :
+        |   - questionnaire en cours → continuer
+        |   - questionnaire terminé → consulter les réponses
+        |
+        | Avec ?edit=1 :
+        |   - questionnaire terminé → modifier les réponses
+        |
+        */
         $this->isEditMode = request()->boolean('edit');
 
         $this->isEditing = $this->isEditMode;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Chargement du moteur du questionnaire
+        |--------------------------------------------------------------------------
+        */
 
         $this->engine = new QuestionnaireEngine($this->form);
 
@@ -71,7 +91,20 @@ class FormRunner extends Component
 
         $this->isCompleted =
             $this->engine->isCompleted();
+        //@dd($this->answers);
 
+            /* dd(
+            \App\Models\QuestionOption::where('question_id', 826)
+                ->orderBy('sort_order')
+                ->get([
+                    'question_id',
+                    'option_label',
+                    'option_value',
+                    'option_score',
+                    'sort_order',
+                ])
+                ->toArray()
+        ); */
         /*
         |--------------------------------------------------------------------------
         | Aucun questionnaire
@@ -85,90 +118,68 @@ class FormRunner extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Questionnaire terminé
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $this->isCompleted
-            && ! $this->isEditMode
-        ) {
-
-            $this->currentQuestion = null;
-
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Recherche première question visible
+        | IMPORTANT :
+        | Un questionnaire terminé reste maintenant consultable.
+        |
+        | On ne met donc PLUS currentQuestion à null lorsque
+        | isCompleted = true.
+        |
         |--------------------------------------------------------------------------
         */
 
         $this->currentQuestion = null;
 
+        /*
+        |--------------------------------------------------------------------------
+        | Recherche de la première question visible
+        |--------------------------------------------------------------------------
+        */
+
         foreach ($this->questions as $index => $question) {
-
-            if (
-                $this->shouldShowQuestion($question)
-            ) {
-
-                $this->currentQuestionIndex =
-                    $index;
-
-                $this->currentQuestion =
-                    $question;
-
+            if ($this->shouldShowQuestion($question)) {
+                $this->currentQuestionIndex = $index;
+                $this->currentQuestion = $question;
                 break;
             }
         }
 
         /*
         |--------------------------------------------------------------------------
-        | En mode normal, chercher première question visible non répondue
+        | Pour un questionnaire non terminé :
+        | on se positionne sur la première question sans réponse.
+        |
+        | Pour un questionnaire terminé :
+        | on reste sur la première question afin de permettre
+        | la consultation des réponses.
         |--------------------------------------------------------------------------
         */
 
-        if (! $this->isEditMode) {
-
-            foreach (
-                $this->questions as $index => $question
-            ) {
-
-                if (
-                    ! $this->shouldShowQuestion(
-                        $question
-                    )
-                ) {
+        if (! $this->isCompleted && ! $this->isEditMode) {
+            foreach ($this->questions as $index => $question) {
+                if (! $this->shouldShowQuestion($question)) {
                     continue;
                 }
 
-                if (
-                    ! array_key_exists(
-                        $question['id'],
-                        $this->answers
-                    )
-                ) {
-
-                    $this->currentQuestionIndex =
-                        $index;
-
-                    $this->currentQuestion =
-                        $question;
-
+                if (! array_key_exists($question['id'], $this->answers)) {
+                    $this->currentQuestionIndex = $index;
+                    $this->currentQuestion = $question;
                     break;
                 }
             }
         }
 
-        $this->initializeCheckboxAnswer(
-            $this->currentQuestion
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | Initialisation d'une réponse checkbox
+        |--------------------------------------------------------------------------
+        */
+
+        $this->initializeCheckboxAnswer($this->currentQuestion);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | PREVIOUS
+    | QUESTION PRÉCÉDENTE
     |--------------------------------------------------------------------------
     */
 
@@ -178,28 +189,20 @@ class FormRunner extends Component
             return;
         }
 
-        $index =
-            $this->currentQuestionIndex - 1;
+        $index = $this->currentQuestionIndex - 1;
 
         while ($index >= 0) {
-
-            $question =
-                $this->questions[$index] ?? null;
+            $question = $this->questions[$index] ?? null;
 
             if (
                 $question
                 && $this->shouldShowQuestion($question)
             ) {
+                $this->currentQuestionIndex = $index;
 
-                $this->currentQuestionIndex =
-                    $index;
+                $this->currentQuestion = $question;
 
-                $this->currentQuestion =
-                    $question;
-
-                $this->initializeCheckboxAnswer(
-                    $question
-                );
+                $this->initializeCheckboxAnswer($question);
 
                 $this->resetErrorBag();
 
@@ -212,7 +215,7 @@ class FormRunner extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | NEXT
+    | QUESTION SUIVANTE
     |--------------------------------------------------------------------------
     */
 
@@ -222,65 +225,49 @@ class FormRunner extends Component
             return;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
         if (! $this->validateCurrentQuestion()) {
             return;
         }
 
         $this->resetErrorBag();
 
-        $nextIndex =
-            $this->currentQuestionIndex + 1;
+        /*
+        |--------------------------------------------------------------------------
+        | Recherche de la prochaine question visible
+        |--------------------------------------------------------------------------
+        */
 
-        while (
-            $nextIndex < count($this->questions)
-        ) {
+        $nextIndex = $this->currentQuestionIndex + 1;
 
-            $nextQuestion =
-                $this->questions[$nextIndex];
+        while ($nextIndex < count($this->questions)) {
+            $nextQuestion = $this->questions[$nextIndex];
 
-            /*
-            |--------------------------------------------------------------------------
-            | Question cachée
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                ! $this->shouldShowQuestion(
-                    $nextQuestion
-                )
-            ) {
-
-                $this->removeHiddenQuestionAnswer(
-                    $nextQuestion
-                );
+            if (! $this->shouldShowQuestion($nextQuestion)) {
+                $this->removeHiddenQuestionAnswer($nextQuestion);
 
                 $nextIndex++;
 
                 continue;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Question visible
-            |--------------------------------------------------------------------------
-            */
+            $this->currentQuestionIndex = $nextIndex;
 
-            $this->currentQuestionIndex =
-                $nextIndex;
+            $this->currentQuestion = $nextQuestion;
 
-            $this->currentQuestion =
-                $nextQuestion;
-
-            $this->initializeCheckboxAnswer(
-                $nextQuestion
-            );
+            $this->initializeCheckboxAnswer($nextQuestion);
 
             return;
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Fin
+        | Fin du questionnaire
         |--------------------------------------------------------------------------
         */
 
@@ -289,28 +276,25 @@ class FormRunner extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | VALIDATION
+    | VALIDATION DE LA QUESTION COURANTE
     |--------------------------------------------------------------------------
     */
 
     protected function validateCurrentQuestion(): bool
     {
-        $question =
-            $this->currentQuestion;
+        $question = $this->currentQuestion;
 
         if (! $question) {
             return true;
         }
 
-        $questionId =
-            $question['id'];
+        $questionId = $question['id'];
 
-        $answer =
-            $this->answers[$questionId] ?? null;
+        $answer = $this->answers[$questionId] ?? null;
 
         /*
         |--------------------------------------------------------------------------
-        | Question conditionnelle cachée
+        | Question conditionnelle devenue invisible
         |--------------------------------------------------------------------------
         */
 
@@ -331,7 +315,6 @@ class FormRunner extends Component
             ($question['is_required'] ?? false)
             && $this->isEmptyAnswer($answer)
         ) {
-
             $this->addError(
                 'answer',
                 'Cette question est obligatoire.'
@@ -342,24 +325,39 @@ class FormRunner extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Fréquence
+        | Ancien système de fréquence
+        |--------------------------------------------------------------------------
+        |
+        | Conservé pour compatibilité avec les anciens questionnaires.
+        | Les nouveaux questionnaires sans has_frequency ne sont
+        | pas concernés.
+        |
         |--------------------------------------------------------------------------
         */
 
-        if (
-            $this->isTemporalQuestion($question)
-            && ! $this->isEmptyAnswer($answer)
-            && empty(
-                $this->frequencies[$questionId] ?? null
-            )
-        ) {
-
-            $this->addError(
-                'frequency',
-                'Veuillez préciser la fréquence.'
-            );
-
-            return false;
+        if ($this->isTemporalQuestion($question)) {
+            if (($question['question_type'] ?? null) === 'checkbox') {
+                $selected = is_array($answer) ? array_map('strval', $answer) : [];
+                $frequencyMap = $this->frequencies[$questionId] ?? [];
+                if (! is_array($frequencyMap)) {
+                    $frequencyMap = [];
+                }
+                foreach ($selected as $selectedValue) {
+                    if ($this->isNoneOption($question, $selectedValue)) {
+                        continue;
+                    }
+                    if (empty($frequencyMap[$selectedValue] ?? null)) {
+                        $this->addError('frequency', 'Veuillez préciser la fréquence pour chaque réponse sélectionnée.');
+                        return false;
+                    }
+                }
+            } elseif (
+                $this->isAffirmativeAnswer($answer)
+                && empty($this->frequencies[$questionId] ?? null)
+            ) {
+                $this->addError('frequency', 'Veuillez préciser la fréquence.');
+                return false;
+            }
         }
 
         return true;
@@ -367,29 +365,80 @@ class FormRunner extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | TEMPORAL
+    | QUESTION AVEC FRÉQUENCE
     |--------------------------------------------------------------------------
     */
 
-    public function isTemporalQuestion(
-        array $question
-    ): bool {
+    /**
+     * Indique si une réponse signifie explicitement « oui ».
+     *
+     * La fréquence n'est exigée que pour une réponse affirmative,
+     * et non pour « Non » ou une réponse vide.
+     */
+    protected function isAffirmativeAnswer(mixed $answer): bool
+    {
+        if (is_bool($answer)) {
+            return $answer;
+        }
 
-        return
-            ($question['has_frequency'] ?? false)
-            === true;
+        if (is_numeric($answer) && (string) $answer === '1') {
+            return true;
+        }
+
+        if (! is_string($answer)) {
+            return false;
+        }
+
+        return in_array(
+            mb_strtolower(trim($answer)),
+            ['oui', 'yes', 'true', '1'],
+            true
+        );
+    }
+
+    public function isTemporalQuestion(array $question): bool
+    {
+        return filter_var(
+            $question['has_frequency'] ?? false,
+            FILTER_VALIDATE_BOOLEAN
+        );
+    }
+
+    /** Indique si la fréquence doit être affichée pour la réponse courante. */
+    public function shouldShowFrequencyForAnswer(array $question, mixed $answer): bool
+    {
+        if (! $this->isTemporalQuestion($question)) {
+            return false;
+        }
+
+        if (($question['question_type'] ?? null) === 'checkbox') {
+            return is_array($answer) && in_array((string) $answer, array_map('strval', $answer), true)
+                && ! $this->isNoneOption($question, (string) $answer);
+        }
+
+        return $this->isAffirmativeAnswer($answer);
+    }
+
+    protected function isNoneOption(array $question, string $value): bool
+    {
+        foreach (($question['options'] ?? []) as $option) {
+            $optionValue = (string) ($option['option_value'] ?? $option['value'] ?? '');
+            $optionLabel = trim((string) ($option['option_label'] ?? $option['label'] ?? $optionValue));
+            if ($optionValue === $value) {
+                return mb_strtolower($optionValue) === 'aucun' || mb_strtolower($optionLabel) === 'aucun';
+            }
+        }
+        return mb_strtolower($value) === 'aucun';
     }
 
     /*
     |--------------------------------------------------------------------------
-    | CONDITIONAL
+    | QUESTION CONDITIONNELLE
     |--------------------------------------------------------------------------
     */
 
-    public function isConditionalQuestion(
-        array $question
-    ): bool {
-
+    public function isConditionalQuestion(array $question): bool
+    {
         return
             isset($question['depends_on'])
             && is_array($question['depends_on'])
@@ -400,28 +449,25 @@ class FormRunner extends Component
             );
     }
 
-    public function shouldShowQuestion(
-        array $question
-    ): bool {
+    /*
+    |--------------------------------------------------------------------------
+    | VISIBILITÉ D'UNE QUESTION
+    |--------------------------------------------------------------------------
+    */
 
-        if (
-            ! $this->isConditionalQuestion(
-                $question
-            )
-        ) {
+    public function shouldShowQuestion(array $question): bool
+    {
+        if (! $this->isConditionalQuestion($question)) {
             return true;
         }
 
-        $dependency =
-            $question['depends_on'];
+        $dependency = $question['depends_on'];
 
         $parentQuestionKey =
-            $dependency['question_key']
-            ?? null;
+            $dependency['question_key'] ?? null;
 
         $requiredValue =
-            $dependency['value']
-            ?? null;
+            $dependency['value'] ?? null;
 
         if (
             ! $parentQuestionKey
@@ -430,30 +476,36 @@ class FormRunner extends Component
             return true;
         }
 
-        $parentQuestion =
-            collect($this->questions)
-                ->first(
-                    fn ($q) =>
-                        ($q['question_key'] ?? null)
-                        === $parentQuestionKey
-                        ||
-                        ($q['question_text'] ?? null)
-                        === $parentQuestionKey
-                );
+        /*
+        |--------------------------------------------------------------------------
+        | Recherche de la question par question_key
+        |--------------------------------------------------------------------------
+        */
+
+        $parentQuestion = collect($this->questions)
+            ->first(
+                fn ($q) =>
+                    ($q['question_key'] ?? null) === $parentQuestionKey
+                    ||
+                    ($q['question_text'] ?? null) === $parentQuestionKey
+            );
 
         if (! $parentQuestion) {
             return false;
         }
 
-        $parentId =
-            $parentQuestion['id'];
+        $parentId = $parentQuestion['id'];
 
         $parentAnswer =
-            $this->answers[$parentId]
-            ?? null;
+            $this->answers[$parentId] ?? null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Checkbox
+        |--------------------------------------------------------------------------
+        */
 
         if (is_array($parentAnswer)) {
-
             return in_array(
                 (string) $requiredValue,
                 array_map(
@@ -464,6 +516,12 @@ class FormRunner extends Component
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Radio / select / autres
+        |--------------------------------------------------------------------------
+        */
+
         return
             (string) $parentAnswer
             ===
@@ -472,52 +530,36 @@ class FormRunner extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | REMOVE HIDDEN
+    | SUPPRESSION D'UNE RÉPONSE DE QUESTION CACHÉE
     |--------------------------------------------------------------------------
     */
 
     protected function removeHiddenQuestionAnswer(
         array $question
     ): void {
-
-        if (
-            ! $this->isConditionalQuestion(
-                $question
-            )
-        ) {
+        if (! $this->isConditionalQuestion($question)) {
             return;
         }
 
-        if (
-            ! $this->shouldShowQuestion(
-                $question
-            )
-        ) {
-
+        if (! $this->shouldShowQuestion($question)) {
             unset(
-                $this->answers[
-                    $question['id']
-                ]
+                $this->answers[$question['id']]
             );
 
             unset(
-                $this->frequencies[
-                    $question['id']
-                ]
+                $this->frequencies[$question['id']]
             );
         }
     }
 
     /*
     |--------------------------------------------------------------------------
-    | EMPTY ANSWER
+    | RÉPONSE VIDE
     |--------------------------------------------------------------------------
     */
 
-    protected function isEmptyAnswer(
-        mixed $answer
-    ): bool {
-
+    protected function isEmptyAnswer(mixed $answer): bool
+    {
         if ($answer === null) {
             return true;
         }
@@ -541,14 +583,13 @@ class FormRunner extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | CHECKBOX
+    | INITIALISATION CHECKBOX
     |--------------------------------------------------------------------------
     */
 
     protected function initializeCheckboxAnswer(
         ?array $question
     ): void {
-
         if (! $question) {
             return;
         }
@@ -562,50 +603,78 @@ class FormRunner extends Component
                 $this->answers
             )
         ) {
-
-            $this->answers[
-                $question['id']
-            ] = [];
+            $this->answers[$question['id']] = [];
         }
     }
 
     /*
     |--------------------------------------------------------------------------
-    | UPDATED ANSWERS
+    | MISE À JOUR DES RÉPONSES
+    |--------------------------------------------------------------------------
+    |
+    | Les checkbox sont gérées côté navigateur par Alpine.js.
+    | Livewire reçoit uniquement le tableau final via $wire.set().
+    |
     |--------------------------------------------------------------------------
     */
 
-    public function updatedAnswers(
-        $value,
-        $key
-    ): void {
-
+    public function updatedAnswers($value, $key): void
+    {
         $this->resetErrorBag();
 
         /*
         |--------------------------------------------------------------------------
-        | Suppression des réponses des questions devenues invisibles
+        | Identification de la question modifiée
         |--------------------------------------------------------------------------
         */
 
-        foreach ($this->questions as $question) {
+        $questionId = (int) str_replace(
+            'answers.',
+            '',
+            (string) $key
+        );
 
-            if (
-                ! $this->isConditionalQuestion(
-                    $question
-                )
-            ) {
+        $question = collect($this->questions)->first(
+            fn ($question) =>
+                (int) ($question['id'] ?? 0) === $questionId
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Synchronisation des fréquences avec les réponses actives
+        |--------------------------------------------------------------------------
+        */
+        if ($question) {
+            $questionId = $question['id'];
+            if (($question['question_type'] ?? null) === 'checkbox') {
+                $selected = is_array($this->answers[$questionId] ?? null)
+                    ? array_map('strval', $this->answers[$questionId]) : [];
+                $frequencyMap = $this->frequencies[$questionId] ?? [];
+                if (! is_array($frequencyMap)) $frequencyMap = [];
+                $this->frequencies[$questionId] = array_intersect_key(
+                    $frequencyMap,
+                    array_flip(array_filter($selected, fn ($v) => ! $this->isNoneOption($question, $v)))
+                );
+            } elseif (! $this->isAffirmativeAnswer($this->answers[$questionId] ?? null)) {
+                unset($this->frequencies[$questionId]);
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Gestion des questions conditionnelles
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($this->questions as $questionItem) {
+
+            if (! $this->isConditionalQuestion($questionItem)) {
                 continue;
             }
 
-            if (
-                ! $this->shouldShowQuestion(
-                    $question
-                )
-            ) {
-
+            if (! $this->shouldShowQuestion($questionItem)) {
                 $this->removeHiddenQuestionAnswer(
-                    $question
+                    $questionItem
                 );
             }
         }
@@ -613,7 +682,27 @@ class FormRunner extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | SAVE
+    | MISE À JOUR DES FRÉQUENCES
+    |--------------------------------------------------------------------------
+    |
+    | Lorsqu'une fréquence est sélectionnée, on efface le message
+    | d'erreur associé à la fréquence.
+    |
+    |--------------------------------------------------------------------------
+    */
+    public function updatedFrequencies($value, $key = null): void
+    {
+        $this->resetErrorBag('frequency');
+    }
+
+    public function clearFrequencyError(): void
+    {
+        $this->resetErrorBag('frequency');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ENREGISTREMENT DES RÉPONSES
     |--------------------------------------------------------------------------
     */
 
@@ -623,33 +712,27 @@ class FormRunner extends Component
             return;
         }
 
-        $responseSet =
-            ResponseSet::updateOrCreate(
-                [
-                    'user_id' =>
-                        Auth::id(),
-
-                    'form_id' =>
-                        $this->form->id,
-
-                    'session_id' =>
-                        $this->session->id,
-                ],
-                [
-                    'status' =>
-                        'completed',
-
-                    'progress' =>
-                        100,
-
-                    'completed_at' =>
-                        now(),
-                ]
-            );
+        $responseSet = ResponseSet::updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'form_id' => $this->form->id,
+                'session_id' => $this->session->id,
+            ],
+            [
+                'status' => 'completed',
+                'progress' => 100,
+                'completed_at' => now(),
+            ]
+        );
 
         /*
         |--------------------------------------------------------------------------
-        | Supprimer les anciennes réponses
+        | Suppression des anciennes réponses
+        |--------------------------------------------------------------------------
+        |
+        | Important pour le mode modification :
+        | les anciennes réponses sont remplacées par les nouvelles.
+        |
         |--------------------------------------------------------------------------
         */
 
@@ -660,32 +743,26 @@ class FormRunner extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Sauvegarder toutes les réponses
+        | Enregistrement des réponses
         |--------------------------------------------------------------------------
         */
 
         foreach ($this->questions as $question) {
-
-            $questionId =
-                $question['id'];
+            $questionId = $question['id'];
 
             /*
             |--------------------------------------------------------------------------
-            | Question conditionnelle cachée
+            | Une question cachée n'est pas enregistrée
             |--------------------------------------------------------------------------
             */
 
-            if (
-                ! $this->shouldShowQuestion(
-                    $question
-                )
-            ) {
+            if (! $this->shouldShowQuestion($question)) {
                 continue;
             }
 
             /*
             |--------------------------------------------------------------------------
-            | Une question sans réponse n'a rien à enregistrer
+            | Aucune réponse
             |--------------------------------------------------------------------------
             */
 
@@ -703,42 +780,37 @@ class FormRunner extends Component
 
             /*
             |--------------------------------------------------------------------------
-            | Fréquence
+            | Ancien système de fréquence
             |--------------------------------------------------------------------------
             */
 
-            if (
-                $this->isTemporalQuestion(
-                    $question
-                )
-            ) {
+            if ($this->isTemporalQuestion($question)) {
+                $frequency = $this->frequencies[$questionId] ?? null;
+                if (($question['question_type'] ?? null) === 'checkbox') {
+                    $selected = is_array($answer) ? array_map('strval', $answer) : [];
+                    $frequency = is_array($frequency) ? array_intersect_key(
+                        $frequency,
+                        array_flip(array_filter($selected, fn ($v) => ! $this->isNoneOption($question, $v)))
+                    ) : [];
+                } elseif (! $this->isAffirmativeAnswer($answer)) {
+                    $frequency = null;
+                }
+                $storedValue = ['value' => $answer, 'frequency' => $frequency];
 
-                $storedValue = [
-                    'value' =>
-                        $answer,
-
-                    'frequency' =>
-                        $this->frequencies[
-                            $questionId
-                        ]
-                        ?? 'jamais',
-                ];
-
-                $answerText =
-                    json_encode(
-                        $storedValue,
-                        JSON_UNESCAPED_UNICODE
-                    );
-
+                $answerText = json_encode(
+                    $storedValue,
+                    JSON_UNESCAPED_UNICODE
+                );
             } else {
-
                 $answerText =
                     is_array($answer)
-                    ? json_encode(
+                    ?
+                    json_encode(
                         $answer,
                         JSON_UNESCAPED_UNICODE
                     )
-                    : (string) $answer;
+                    :
+                    (string) $answer;
             }
 
             Answer::create([
@@ -758,15 +830,20 @@ class FormRunner extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Statut
+        | Questionnaire terminé
         |--------------------------------------------------------------------------
         */
 
         $this->isCompleted = true;
 
+        /*
+        |--------------------------------------------------------------------------
+        | Vérification de la session globale
+        |--------------------------------------------------------------------------
+        */
+
         $assignedFormsCount =
-            auth()
-                ->user()
+            auth()->user()
                 ->forms()
                 ->count();
 
@@ -785,10 +862,8 @@ class FormRunner extends Component
         if (
             $assignedFormsCount > 0
             &&
-            $completedFormsCount >=
-                $assignedFormsCount
+            $completedFormsCount >= $assignedFormsCount
         ) {
-
             $this->session->update([
                 'status' =>
                     'completed',
@@ -800,7 +875,7 @@ class FormRunner extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Sortie du mode édition
+        | Fin du mode modification
         |--------------------------------------------------------------------------
         */
 
@@ -808,20 +883,31 @@ class FormRunner extends Component
 
         $this->isEditing = false;
 
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANT
+        |--------------------------------------------------------------------------
+        |
+        | On ne met plus currentQuestion à null ici.
+        |
+        | Cela permet au questionnaire tout juste enregistré de
+        | rester consultable immédiatement.
+        |
+        |--------------------------------------------------------------------------
+        */
+
         $this->currentQuestion = null;
     }
 
     /*
     |--------------------------------------------------------------------------
-    | PROGRESS
+    | PROGRESSION
     |--------------------------------------------------------------------------
     */
 
     public function getProgressProperty(): int
     {
-        if (
-            count($this->questions) === 0
-        ) {
+        if (count($this->questions) === 0) {
             return 0;
         }
 
@@ -830,9 +916,12 @@ class FormRunner extends Component
                 ($this->currentQuestionIndex + 1)
                 /
                 count($this->questions)
-            ) * 100
+            )
+            * 100
         );
     }
+
+
 
     /*
     |--------------------------------------------------------------------------

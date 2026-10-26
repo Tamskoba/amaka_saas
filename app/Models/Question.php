@@ -14,6 +14,8 @@ class Question extends Model
         'section_id',
         'question_text',
         'question_type',
+        'question_key',
+        'has_frequency',
         'placeholder',
         'help_text',
         'is_required',

@@ -138,72 +138,56 @@ class QuestionnaireEngine
 
                 /*
                 |--------------------------------------------------------------------------
-                | NORMALISATION DE CONDITIONAL_LOGIC
+                | NORMALISATION DE LA LOGIQUE CONDITIONNELLE
                 |--------------------------------------------------------------------------
-                |
-                | La BDD peut contenir :
-                |
-                | conditional_logic = array
-                |
-                | ou :
-                |
-                | conditional_logic = JSON string
-                |
-                | On transforme toujours cela en depends_on utilisable
-                | directement par FormRunner.
-                |
                 */
 
+                $conditionalLogic = $question['conditional_logic'] ?? null;
+
+                // Décoder le JSON si nécessaire.
+                if (is_string($conditionalLogic) && $this->isJson($conditionalLogic)) {
+                    $conditionalLogic = json_decode($conditionalLogic, true);
+                }
+
+                // Uniformiser la structure pour FormRunner.
                 if (
-                    isset($question['conditional_logic'])
-                    && ! empty($question['conditional_logic'])
+                    is_array($conditionalLogic)
+                    && isset($conditionalLogic['question_key'])
+                    && array_key_exists('value', $conditionalLogic)
                 ) {
-
-                    $conditionalLogic =
-                        $question['conditional_logic'];
-
-                    if (
-                        is_string($conditionalLogic)
-                        && $this->isJson($conditionalLogic)
-                    ) {
-                        $conditionalLogic =
-                            json_decode(
-                                $conditionalLogic,
-                                true
-                            );
-                    }
-
-                    if (
-                        is_array($conditionalLogic)
-                        && isset($conditionalLogic['question_key'])
-                        && array_key_exists('value', $conditionalLogic)
-                    ) {
-
-                        $question['depends_on'] =
-                            $conditionalLogic;
-                    }
+                    $question['depends_on'] = $conditionalLogic;
+                } elseif (
+                    is_array($question['depends_on'] ?? null)
+                ) {
+                    // Conserver un depends_on déjà présent dans les données.
+                } elseif (
+                    is_string($question['depends_on'] ?? null)
+                    && $this->isJson($question['depends_on'])
+                ) {
+                    $question['depends_on'] = json_decode(
+                        $question['depends_on'],
+                        true
+                    );
+                } else {
+                    $question['depends_on'] = null;
                 }
 
                 /*
                 |--------------------------------------------------------------------------
-                | Si depends_on existe déjà, on le conserve.
+                | NORMALISATION DE LA FRÉQUENCE
                 |--------------------------------------------------------------------------
                 */
 
-                if (
-                    isset($question['depends_on'])
-                    && is_string($question['depends_on'])
-                    && $this->isJson($question['depends_on'])
-                ) {
+                $question['has_frequency'] = (bool) ($question['has_frequency'] ?? false);
 
-                    $question['depends_on'] =
-                        json_decode(
-                            $question['depends_on'],
-                            true
-                        );
-                }
+                /*
+                |--------------------------------------------------------------------------
+                | CONSERVATION DE LA QUESTION
+                |--------------------------------------------------------------------------
+                */
 
                 $this->questions[] = $question;
+
             }
         }
     }

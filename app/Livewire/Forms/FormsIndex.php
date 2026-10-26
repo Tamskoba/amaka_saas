@@ -115,31 +115,85 @@ class FormsIndex extends Component
 
                     'progress' => $response?->progress ?? 0,
 
-                    'updated_at' => $response?->updated_at ?? $form->updated_at,
+                    'updated_at' =>
+                        $response?->updated_at
+                        ?? $form->updated_at,
                 ];
             })
             ->values()
             ->toArray();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Debug temporaire
-        |--------------------------------------------------------------------------
-        */
-
-        // dd($this->forms);
     }
 
-    public function render()
-    {
-        return view('livewire.forms.forms-index');
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Ouvrir un questionnaire
+    |--------------------------------------------------------------------------
+    |
+    | Utilisé pour :
+    | - commencer un questionnaire
+    | - continuer un questionnaire
+    | - consulter un questionnaire terminé
+    |
+    */
 
     public function openForm(int $formId)
     {
         return redirect()->route(
             'forms.run',
-            $formId
+            [
+                'form' => $formId,
+            ]
         );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Consulter un questionnaire terminé
+    |--------------------------------------------------------------------------
+    |
+    | Le questionnaire est ouvert sans ?edit=1.
+    | FormRunner affiche alors les réponses existantes en lecture.
+    |
+    */
+
+    public function viewForm(int $formId)
+    {
+        return redirect()->route(
+            'forms.run',
+            [
+                'form' => $formId,
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modifier un questionnaire terminé
+    |--------------------------------------------------------------------------
+    |
+    | Le paramètre edit=1 active le mode modification dans FormRunner.
+    |
+    */
+
+    public function editForm(int $formId)
+    {
+        return redirect()->route(
+            'forms.run',
+            [
+                'form' => $formId,
+                'edit' => 1,
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Render
+    |--------------------------------------------------------------------------
+    */
+
+    public function render()
+    {
+        return view('livewire.forms.forms-index');
     }
 }
