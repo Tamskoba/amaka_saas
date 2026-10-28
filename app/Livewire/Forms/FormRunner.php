@@ -38,9 +38,35 @@ class FormRunner extends Component
 
     protected QuestionnaireEngine $engine;
 
+    /**
+     * Vérifie que l'utilisateur connecté est autorisé
+     * à accéder à ce questionnaire.
+     */
+    protected function authorizeFormAccess(): void
+    {
+        abort_unless(Auth::check(), 403);
+
+        $user = Auth::user();
+
+        $hasAccess = $user->forms()
+            ->where('forms.id', $this->form->id)
+            ->where('forms.is_active', 1)
+            ->where('forms.is_deleted', 0)
+            ->wherePivot('is_visible', 1)
+            ->exists();
+
+        abort_unless(
+            $hasAccess,
+            403,
+            'Ce questionnaire ne vous est pas attribué.'
+        );
+    }
+
     public function mount(Form $form): void
     {
         $this->form = $form;
+
+        $this->authorizeFormAccess();
        
         // Mémoriser l'URL réelle de la page avant les requêtes Livewire.
         $this->editUrl = request()->fullUrlWithQuery([
@@ -185,11 +211,13 @@ class FormRunner extends Component
 
     public function previousQuestion(): void
     {
+        $this->authorizeFormAccess();
+
         if ($this->isCompleted && $this->isEditMode === false) {
             // La navigation arrière est autorisée en consultation.
             // Continuer normalement vers la question précédente.
         }
-        
+
         if ($this->currentQuestionIndex <= 0) {
             return;
         }
@@ -226,6 +254,8 @@ class FormRunner extends Component
  
     public function nextQuestion(): void
     {
+        $this->authorizeFormAccess();
+
         if (! $this->currentQuestion) {
             return;
         }
@@ -705,6 +735,8 @@ class FormRunner extends Component
 
     public function updatedAnswers($value, $key): void
     {
+        $this->authorizeFormAccess();
+
         $this->resetErrorBag();
 
         $questionId = (int) explode('.', (string) $key)[0];
@@ -761,6 +793,8 @@ class FormRunner extends Component
 
     public function updatedFrequencies($value, $key = null): void
     {
+        $this->authorizeFormAccess();
+
         $this->resetErrorBag('frequency');
 
         $this->saveProgress();
@@ -769,6 +803,8 @@ class FormRunner extends Component
 
     public function clearFrequencyError(): void
     {
+        $this->authorizeFormAccess();
+
         $this->resetErrorBag('frequency');
     }
 
@@ -780,6 +816,8 @@ class FormRunner extends Component
 
     public function saveResponses(): void
     {
+        $this->authorizeFormAccess();
+
         if (! $this->session) {
             return;
         }
@@ -976,6 +1014,8 @@ class FormRunner extends Component
      */
     protected function saveProgress(): void
     {
+        $this->authorizeFormAccess();
+
         if (
             ! $this->session
             || $this->isCompleted
@@ -1123,6 +1163,8 @@ class FormRunner extends Component
 
     public function render()
     {
+        $this->authorizeFormAccess();
+        
         return view(
             'livewire.forms.form-runner',
             [
