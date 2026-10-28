@@ -1,5 +1,11 @@
 <div class="max-w-5xl mx-auto">
 
+    @php
+        // La consultation d'un questionnaire terminé ne doit jamais permettre
+        // de modifier les réponses. Le mode Modifier reste interactif.
+        $isReadOnly = $isCompleted && ! $isEditMode;
+    @endphp
+
     {{-- ============================================================
         EN-TÊTE
     ============================================================ --}}
@@ -26,21 +32,21 @@
                 <a
                     href="{{ $editUrl }}"
                     class="
-                        inline-flex 
-                        w-fit 
-                        flex-none 
-                        items-center 
-                        justify-center 
-                        self-start 
-                        rounded-lg 
-                        bg-[#C87A2A] 
-                        px-4 
-                        py-2 
-                        text-sm 
-                        font-medium 
-                        text-white 
-                        transition 
-                        hover:bg-[#A95F18] 
+                        inline-flex
+                        w-fit
+                        flex-none
+                        items-center
+                        justify-center
+                        self-start
+                        rounded-lg
+                        bg-[#C87A2A]
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        text-white
+                        transition
+                        hover:bg-[#A95F18]
                         whitespace-nowrap
                     "
                     style="
@@ -319,11 +325,7 @@
                     {{ $question['question_text'] ?? $question['label'] ?? '' }}
 
                     @if ($question['is_required'] ?? false)
-
-                        <span class="text-red-500">
-                            *
-                        </span>
-
+                        <span class="text-red-500">*</span>
                     @endif
 
                 </h2>
@@ -334,6 +336,11 @@
             {{-- ====================================================
                 RADIO
             ==================================================== --}}
+
+            <fieldset
+                @disabled($isReadOnly)
+                class="min-w-0"
+            >
 
             @if (($question['question_type'] ?? null) === 'radio')
 
@@ -353,50 +360,55 @@
                                 ?? $optionValue;
                         @endphp
 
-
-                    <label
-                        wire:key="radio-{{ $question['id'] }}-{{ md5((string) $optionValue) }}"
-                        class="
-                            flex
-                            cursor-pointer
-                            items-center
-                            gap-3
-                            rounded-xl
-                            border
-                            border-[#EADFD3]
-                            bg-[#FFFDFC]
-                            p-4
-                            transition
-                            hover:border-[#C87A2A]
-                            hover:bg-[#FFF8F2]
-                        "
-                    >
-                        <input
-                            type="radio"
-                            name="question-{{ $question['id'] }}"
-                            value="{{ (string) $optionValue }}"
-                            wire:model.live="answers.{{ $question['id'] }}"
+                        <label
+                            wire:key="radio-{{ $question['id'] }}-{{ md5((string) $optionValue) }}"
                             class="
-                                h-4
-                                w-4
-                                border-[#CDBFB4]
-                                text-[#C87A2A]
-                                focus:ring-[#C87A2A]
+                                flex
+                                cursor-pointer
+                                items-center
+                                gap-3
+                                rounded-xl
+                                border
+                                border-[#EADFD3]
+                                bg-[#FFFDFC]
+                                p-4
+                                transition
+                                hover:border-[#C87A2A]
+                                hover:bg-[#FFF8F2]
                             "
                         >
+                            <input
+                                type="radio"
+                                name="question-{{ $question['id'] }}"
+                                value="{{ (string) $optionValue }}"
+                                wire:model.live="answers.{{ $question['id'] }}"
+                                class="
+                                    h-4
+                                    w-4
+                                    border-[#CDBFB4]
+                                    text-[#C87A2A]
+                                    focus:ring-[#C87A2A]
+                                "
+                            >
 
-                        <span class="text-sm text-[#6B4A3A]">
-                            {{ $optionLabel }}
-                        </span>
-                    </label>
+                            <span class="text-sm text-[#6B4A3A]">
+                                {{ $optionLabel }}
+                            </span>
+                        </label>
 
                     @endforeach
 
                 </div>
 
 
-                {{-- Ancien système de fréquence conservé pour compatibilité --}}
-                @if ($this->isTemporalQuestion($question) && $this->shouldShowFrequencyForAnswer($question, $answers[$question['id']] ?? null))
+                {{-- Fréquence conditionnelle pour les réponses radio --}}
+                @if (
+                    $this->isTemporalQuestion($question)
+                    && $this->shouldShowFrequencyForAnswer(
+                        $question,
+                        $answers[$question['id']] ?? null
+                    )
+                )
 
                     <div class="mt-5">
 
@@ -413,7 +425,7 @@
                         </label>
 
                         <select
-                            wire:model="frequencies.{{ $question['id'] }}"
+                            wire:model.live="frequencies.{{ $question['id'] }}"
                             wire:change="clearFrequencyError"
                             class="
                                 w-full
@@ -502,10 +514,15 @@
                             value = String(value);
                             this.selected = this.selected.map(v => String(v));
 
-                            if (this.aucun !== null && value === String(this.aucun)) {
+                            if (
+                                this.aucun !== null
+                                && value === String(this.aucun)
+                            ) {
                                 this.selected = checked
                                     ? [String(this.aucun)]
-                                    : this.selected.filter(v => v !== String(this.aucun));
+                                    : this.selected.filter(
+                                        v => v !== String(this.aucun)
+                                    );
                             } else if (checked) {
                                 if (this.aucun !== null) {
                                     this.selected = this.selected.filter(
@@ -517,12 +534,15 @@
                                     this.selected.push(value);
                                 }
                             } else {
-                                this.selected = this.selected.filter(v => v !== value);
+                                this.selected = this.selected.filter(
+                                    v => v !== value
+                                );
                             }
 
                             this.$wire.set(
                                 'answers.{{ $question['id'] }}',
-                                this.selected
+                                this.selected,
+                                true
                             );
                         }
                     }"
@@ -562,7 +582,7 @@
 
                             <input
                                 type="checkbox"
-                                value="{{ $optionValue }}"
+                                value="{{ (string) $optionValue }}"
                                 x-model="selected"
                                 @change="sync(@js((string) $optionValue), $event.target.checked)"
                                 wire:key="checkbox-{{ $question['id'] }}-{{ md5((string) $optionValue) }}"
@@ -575,28 +595,84 @@
                             >
 
                             <div class="min-w-0 flex-1">
+
                                 <span class="text-sm text-[#6B4A3A]">
                                     {{ $optionLabel }}
                                 </span>
 
-                                @if ($this->isTemporalQuestion($question) && in_array((string) $optionValue, $selectedValues, true) && mb_strtolower(trim((string) $optionLabel)) !== 'aucun' && mb_strtolower(trim((string) $optionValue)) !== 'aucun')
-                                    <div class="mt-3" wire:key="frequency-{{ $question['id'] }}-{{ md5((string) $optionValue) }}">
-                                        <label class="mb-1 block text-xs font-medium text-[#4B2E1F]">
+                                {{-- Fréquence individuelle pour chaque option cochée --}}
+                                @if (
+                                    $this->isTemporalQuestion($question)
+                                    && in_array(
+                                        (string) $optionValue,
+                                        $selectedValues,
+                                        true
+                                    )
+                                    && mb_strtolower(trim((string) $optionLabel)) !== 'aucun'
+                                    && mb_strtolower(trim((string) $optionValue)) !== 'aucun'
+                                )
+
+                                    <div
+                                        class="mt-3"
+                                        wire:key="frequency-{{ $question['id'] }}-{{ md5((string) $optionValue) }}"
+                                    >
+
+                                        <label
+                                            class="
+                                                mb-1
+                                                block
+                                                text-xs
+                                                font-medium
+                                                text-[#4B2E1F]
+                                            "
+                                        >
                                             Fréquence de « {{ $optionLabel }} »
                                         </label>
+
                                         <select
-                                            wire:model="frequencies.{{ $question['id'] }}.{{ $optionValue }}"
+                                            wire:model.live="frequencies.{{ $question['id'] }}.{{ $optionValue }}"
                                             wire:change="clearFrequencyError"
-                                            class="w-full rounded-lg border border-[#EADFD3] bg-white px-3 py-2 text-sm text-[#6B4A3A] focus:border-[#C87A2A] focus:ring-[#C87A2A]"
+                                            class="
+                                                w-full
+                                                rounded-lg
+                                                border
+                                                border-[#EADFD3]
+                                                bg-white
+                                                px-3
+                                                py-2
+                                                text-sm
+                                                text-[#6B4A3A]
+                                                focus:border-[#C87A2A]
+                                                focus:ring-[#C87A2A]
+                                            "
                                         >
-                                            <option value="">Sélectionnez une fréquence</option>
-                                            <option value="rarement">Rarement (≤ 1 fois/mois)</option>
-                                            <option value="parfois">Parfois (1–3 fois/semaine)</option>
-                                            <option value="souvent">Souvent (≥ 4 fois/semaine)</option>
-                                            <option value="quotidien">Quotidien / quasi quotidien</option>
+
+                                            <option value="">
+                                                Sélectionnez une fréquence
+                                            </option>
+
+                                            <option value="rarement">
+                                                Rarement (≤ 1 fois/mois)
+                                            </option>
+
+                                            <option value="parfois">
+                                                Parfois (1–3 fois/semaine)
+                                            </option>
+
+                                            <option value="souvent">
+                                                Souvent (≥ 4 fois/semaine)
+                                            </option>
+
+                                            <option value="quotidien">
+                                                Quotidien / quasi quotidien
+                                            </option>
+
                                         </select>
+
                                     </div>
+
                                 @endif
+
                             </div>
 
                         </label>
@@ -630,7 +706,7 @@
                     <input
                         id="answer-{{ $question['id'] }}"
                         type="text"
-                        wire:model="answers.{{ $question['id'] }}"
+                        wire:model.live.debounce.500ms="answers.{{ $question['id'] }}"
                         placeholder="{{ $question['placeholder'] ?? 'Votre réponse...' }}"
                         class="
                             w-full
@@ -676,7 +752,7 @@
 
                     <textarea
                         id="answer-{{ $question['id'] }}"
-                        wire:model="answers.{{ $question['id'] }}"
+                        wire:model.live.debounce.500ms="answers.{{ $question['id'] }}"
                         rows="{{ $question['rows'] ?? 5 }}"
                         placeholder="{{ $question['placeholder'] ?? 'Votre réponse...' }}"
                         class="
@@ -724,7 +800,7 @@
                     <input
                         id="answer-{{ $question['id'] }}"
                         type="date"
-                        wire:model="answers.{{ $question['id'] }}"
+                        wire:model.live="answers.{{ $question['id'] }}"
                         class="
                             w-full
                             rounded-lg
@@ -768,7 +844,7 @@
 
                     <select
                         id="answer-{{ $question['id'] }}"
-                        wire:model="answers.{{ $question['id'] }}"
+                        wire:model.live="answers.{{ $question['id'] }}"
                         class="
                             w-full
                             rounded-lg
@@ -837,7 +913,7 @@
                     <input
                         id="answer-{{ $question['id'] }}"
                         type="number"
-                        wire:model="answers.{{ $question['id'] }}"
+                        wire:model.live.debounce.500ms="answers.{{ $question['id'] }}"
                         min="{{ $question['min'] ?? '' }}"
                         max="{{ $question['max'] ?? '' }}"
                         step="{{ $question['step'] ?? '1' }}"
@@ -862,6 +938,7 @@
 
             @endif
 
+            </fieldset>
 
             {{-- ====================================================
                 MESSAGE D'ERREUR
@@ -882,9 +959,9 @@
                         text-red-700
                     "
                     style="
-                        color : red;
-                        font-weight : bold;
-                    "                    
+                        color: red;
+                        font-weight: bold;
+                    "
                 >
                     {{ $message }}
                 </div>
@@ -907,8 +984,8 @@
                         text-red-700
                     "
                     style="
-                        color : red;
-                        font-weight : bold;
+                        color: red;
+                        font-weight: bold;
                     "
                 >
                     {{ $message }}
@@ -930,7 +1007,7 @@
                     border-t
                     border-[#EADFD3]
                     pt-6
-                    items-center 
+                    items-center
                     justify-center
                 "
             >
@@ -1006,35 +1083,67 @@
 
                     @else
 
-                        <button
-                            type="button"
-                            wire:click="nextQuestion"
-                            class="
-                                inline-flex
-                                items-center
-                                justify-center
-                                rounded-lg
-                                bg-[#4B2E1F]
-                                px-5
-                                py-2.5
-                                text-sm
-                                font-medium
-                                text-white
-                                transition
-                                hover:bg-[#351F16]
-                            "
-                            style="
-                                background-color: #BB7229;
-                                padding-top: 10px;
-                                padding-bottom: 10px;
-                            "
-                        >
-                            @if ($isEditMode)
-                                Enregistrer les modifications
-                            @else
-                                Terminer le questionnaire
-                            @endif
-                        </button>
+                        @if ($isReadOnly)
+
+                            <button
+                                type="button"
+                                disabled
+                                aria-disabled="true"
+                                class="
+                                    inline-flex
+                                    cursor-not-allowed
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    bg-[#EADFD3]
+                                    px-5
+                                    py-2.5
+                                    text-sm
+                                    font-medium
+                                    text-[#6B4A3A]
+                                    opacity-80
+                                "
+                                style="
+                                    padding-top: 10px;
+                                    padding-bottom: 10px;
+                                "
+                            >
+                                Fin du questionnaire
+                            </button>
+
+                        @else
+
+                            <button
+                                type="button"
+                                wire:click="nextQuestion"
+                                class="
+                                    inline-flex
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    bg-[#4B2E1F]
+                                    px-5
+                                    py-2.5
+                                    text-sm
+                                    font-medium
+                                    text-white
+                                    transition
+                                    hover:bg-[#351F16]
+                                "
+                                style="
+                                    background-color: #BB7229;
+                                    padding-top: 10px;
+                                    padding-bottom: 10px;
+                                "
+                            >
+                                @if ($isEditMode)
+                                    Enregistrer les modifications
+                                @else
+                                    Terminer le questionnaire
+                                @endif
+                            </button>
+
+                        @endif
 
                     @endif
 

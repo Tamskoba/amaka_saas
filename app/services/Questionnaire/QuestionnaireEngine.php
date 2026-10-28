@@ -200,113 +200,78 @@ class QuestionnaireEngine
 
     protected function loadExistingResponses(): void
     {
-        $userId = Auth::id();
-
-        if (! $userId) {
+        if (! Auth::check()) {
             return;
         }
 
-        $this->responseSet = ResponseSet::where(
-            'user_id',
-            $userId
-        )
-            ->where(
-                'form_id',
-                $this->form->id
+        $responseSet = ResponseSet::where('user_id', Auth::id())
+            ->where('form_id', $this->form->id)
+            ->when(
+                $this->session,
+                fn ($query) => $query->where('session_id', $this->session->id)
             )
-            ->latest()
+            ->latest('id')
             ->first();
 
-        if (! $this->responseSet) {
+        if (! $responseSet) {
+            $this->responseSet = null;
+
+            // Initialiser les checkbox sans réponse.
+            foreach ($this->questions as $question) {
+                if (($question['question_type'] ?? null) === 'checkbox') {
+                    $this->answers[$question['id']] = [];
+                }
+            }
+
             return;
         }
 
-        foreach ($this->responseSet->answers as $answer) {
+        $this->responseSet = $responseSet;
 
-            $value = $answer->answer_value;
+        foreach ($responseSet->answers as $answerRecord) {
+            $questionId = $answerRecord->question_id;
 
-            /*
-            |--------------------------------------------------------------------------
-            | JSON
-            |--------------------------------------------------------------------------
-            */
+            // Priorité à answer_text, qui peut contenir le JSON complet.
+            $rawValue = $answerRecord->answer_text;
 
-            if (
-                is_string($value)
-                && $this->isJson($value)
-            ) {
+            if ($rawValue === null || $rawValue === '') {
+                $rawValue = $answerRecord->answer_value;
+            }
 
-                $decoded = json_decode(
-                    $value,
-                    true
-                );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Réponse avec fréquence
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-                    is_array($decoded)
-                    && array_key_exists('value', $decoded)
-                    && array_key_exists('frequency', $decoded)
-                ) {
-
-                    $this->answers[
-                        $answer->question_id
-                    ] = $decoded['value'];
-
-                    $this->frequencies[
-                        $answer->question_id
-                    ] = $decoded['frequency'];
-
-                    continue;
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Checkbox ou autre réponse JSON
-                |--------------------------------------------------------------------------
-                */
-
-                $this->answers[
-                    $answer->question_id
-                ] = $decoded;
-
+            if ($rawValue === null || $rawValue === '') {
                 continue;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Réponse simple
-            |--------------------------------------------------------------------------
-            */
+            $decoded = json_decode($rawValue, true);
 
-            $this->answers[
-                $answer->question_id
-            ] = $value;
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                // Format des questions avec fréquence :
+                // {"value": ..., "frequency": ...}
+                if (
+                    array_key_exists('value', $decoded)
+                    && array_key_exists('frequency', $decoded)
+                ) {
+                    $this->answers[$questionId] = $decoded['value'];
+                    $this->frequencies[$questionId] = $decoded['frequency'];
+                } else {
+                    // Format des réponses de type checkbox ou tableau.
+                    $this->answers[$questionId] = $decoded;
+                }
+            } else {
+                // Réponse simple : texte, radio, date, nombre, etc.
+                $this->answers[$questionId] = $rawValue;
+            }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Initialisation des checkbox
-        |--------------------------------------------------------------------------
-        */
-
+        // Initialiser les checkbox qui n'ont aucune réponse enregistrée.
         foreach ($this->questions as $question) {
+            $questionId = $question['id'];
 
             if (
                 ($question['question_type'] ?? null) === 'checkbox'
-                && ! array_key_exists(
-                    $question['id'],
-                    $this->answers
-                )
+                && ! array_key_exists($questionId, $this->answers)
             ) {
-
-                $this->answers[
-                    $question['id']
-                ] = [];
+                $this->answers[$questionId] = [];
             }
         }
     }
