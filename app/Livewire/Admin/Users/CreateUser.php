@@ -90,7 +90,7 @@ class CreateUser extends Component
                 'phone' => 'nullable|max:50',
                 'city' => 'nullable|max:100',
                 'country' => 'nullable|max:100',
-                'role' => 'required|in:client,micronutritionist,admin',
+                'role' => 'required|in:client,micronutritionniste,admin',
                 'is_active' => 'boolean',
             ],
             [

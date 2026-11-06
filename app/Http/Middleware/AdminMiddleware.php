@@ -19,7 +19,7 @@ class AdminMiddleware
 
         if (! in_array(
             auth()->user()->role,
-            ['admin', 'micronutritionist'],
+            ['admin', 'micronutritionniste'],
             true
         )) {
             abort(403, 'Accès non autorisé.');

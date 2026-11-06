@@ -89,7 +89,7 @@ class EditUser extends Component
 
             'role' => [
                 'required',
-                'in:client,micronutritionist,admin',
+                'in:client,micronutritionniste,admin',
             ],
 
         ];

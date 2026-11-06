@@ -216,7 +216,7 @@
                         Client
                     </option>
 
-                    <option value="micronutritionist">
+                    <option value="micronutritionniste">
                         Micronutritionniste
                     </option>
 

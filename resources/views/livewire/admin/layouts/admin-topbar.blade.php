@@ -19,14 +19,14 @@
 
         $roleLabel = match ($user?->role) {
             'admin' => 'Administrateur',
-            'micronutritionist' => 'Micronutritionniste',
+            'micronutritionniste' => 'Micronutritionniste',
             'super_admin' => 'Super administrateur',
             default => 'Utilisateur',
         };
 
         $dashboardTitle = match ($user?->role) {
             'admin' => 'Dashboard Administrateur',
-            'micronutritionist' => 'Dashboard Micronutritionniste',
+            'micronutritionniste' => 'Dashboard Micronutritionniste',
             'super_admin' => 'Dashboard Super administrateur',
             default => 'Dashboard',
         };

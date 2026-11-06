@@ -22,6 +22,8 @@ use App\Livewire\Admin\Users\EditUser;
 use App\Livewire\Admin\Users\AssignForms;
 use App\Livewire\Admin\Users\UserSessionHistory;
 
+use App\Livewire\Admin\Synthesis\FunctionalSynthesisView;
+
 use App\Livewire\Sessions\SessionHistory;
 
 
@@ -113,6 +115,24 @@ Route::middleware(['auth'])->group(function () {
         '/forms/{form}/responses',
         FormResponses::class
     )->name('forms.responses');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SYNTHÈSE FONCTIONNELLE
+    |--------------------------------------------------------------------------
+    |
+    | Le composant vérifie lui-même les rôles autorisés :
+    | admin et micronutritionniste.
+    |
+    */
+
+    Route::get(
+        '/users/{user}/functional-synthesis',
+        FunctionalSynthesisView::class
+    )
+        ->whereNumber('user')
+        ->name('admin.users.functional-synthesis');
 
 
     /*
