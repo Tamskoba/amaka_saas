@@ -146,10 +146,16 @@
                     rounded-2xl
                     bg-[#4B2E1F]
                     hover:bg-[#3A2418]
-                    text-black
+                    text-white
                     font-semibold
                     shadow-lg
                     transition
+                "
+
+                style="
+                    background-color: #BB7229;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
                 "
             >
                 Commencer

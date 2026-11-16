@@ -114,8 +114,21 @@ new class extends Component
             @endif
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Modifier') }}</x-primary-button>
+        <div class="
+                flex 
+                items-center 
+                gap-4
+            "
+        >
+            <x-primary-button
+                style="
+                    background-color: #BB7229;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                "
+            >
+                {{ __('Modifier') }}
+            </x-primary-button>
 
             <x-action-message class="me-3" on="profile-updated">
                 {{ __('Profil modifié.') }}
