@@ -70,11 +70,22 @@
             <button
                 wire:click="save"
                 class="
-                    px-5
-                    py-3
-                    rounded-lg
-                    bg-[#C87A2A]
-                    text-black
+                    inline-flex 
+                    items-center 
+                    justify-center 
+                    rounded-2xl 
+                    border 
+                    border-[#EADFD3] 
+                    px-5 py-3 
+                    font-semibold 
+                    text-white 
+                    transition 
+                    hover:bg-[#F8F1EB]
+                "
+                style="
+                    background-color: #BB7229;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
                 "
             >
                 Enregistrer
