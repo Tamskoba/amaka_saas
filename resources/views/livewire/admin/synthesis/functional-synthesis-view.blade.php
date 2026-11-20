@@ -14,7 +14,7 @@
         </div>
 
         {{-- Identité de l'utilisateur --}}
-        <div class="rounded-2xl border border-[#EADFD3] bg-white p-5 shadow-sm md:p-6">
+        <div class="rounded-2xl border border-[#EADFD3] bg-white p-6 shadow-sm md:p-6">
 
             <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
 
@@ -127,7 +127,7 @@
             @endif
 
             {{-- Modes de présentation --}}
-            <div class="rounded-2xl border border-[#EADFD3] bg-white p-5 shadow-sm md:p-6">
+            <div class="rounded-2xl border border-[#EADFD3] bg-white p-6 shadow-sm md:p-6">
 
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
@@ -149,7 +149,7 @@
                             wire:click="$set('presentationMode', 'questionnaire')"
                             @class([
                                 'rounded-xl border px-4 py-2 text-sm font-medium transition',
-                                'border-[#4B2E1F] bg-[#4B2E1F] text-white' => $presentationMode === 'questionnaire',
+                                'border-[#DCCABC] bg-[#F7F2EE] text-[#6B4A3A]' => $presentationMode === 'questionnaire',
                                 'border-[#EADFD3] bg-white text-[#4B2E1F] hover:bg-[#F7F2EE]' => $presentationMode !== 'questionnaire',
                             ])
                         >
@@ -161,11 +161,23 @@
                             wire:click="$set('presentationMode', 'theme')"
                             @class([
                                 'rounded-xl border px-4 py-2 text-sm font-medium transition',
-                                'border-[#4B2E1F] bg-[#4B2E1F] text-white' => $presentationMode === 'theme',
+                                'border-[#DCCABC] bg-[#F7F2EE] text-[#6B4A3A]' => $presentationMode === 'theme',
                                 'border-[#EADFD3] bg-white text-[#4B2E1F] hover:bg-[#F7F2EE]' => $presentationMode !== 'theme',
                             ])
                         >
                             Par grands thèmes
+                        </button>
+
+                        <button
+                            type="button"
+                            wire:click="$set('presentationMode', 'detailed')"
+                            @class([
+                                'rounded-xl border px-4 py-2 text-sm font-medium transition',
+                                'border-[#DCCABC] bg-[#F7F2EE] text-[#6B4A3A]' => $presentationMode === 'detailed',
+                                'border-[#EADFD3] bg-white text-[#4B2E1F] hover:bg-[#F7F2EE]' => $presentationMode !== 'detailed',
+                            ])
+                        >
+                            Détaillé
                         </button>
 
                     </div>
@@ -275,7 +287,7 @@
                     </div>
 
                 {{-- MODE 2 : PAR GRANDS THÈMES --}}
-                @else
+                @elseif ($presentationMode === 'theme')
 
                     <div class="mt-6 space-y-5">
 
@@ -346,7 +358,182 @@
 
                     </div>
 
-                @endif
+                {{-- MODE 3 : SYNTHÈSE FONCTIONNELLE DÉTAILLÉE --}}
+                @else
+
+                    <div class="mt-6 space-y-5">
+
+                    {{-- Options d'affichage et export PDF --}}
+                    <div class="rounded-xl border border-[#EADFD3] bg-white p-5">
+
+                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+                            <div class="space-y-3">
+
+                                <div>
+                                    <p class="text-sm font-semibold text-[#4B2E1F]">
+                                        Options d'affichage
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-[#8A5A44]">
+                                        Personnaliser les informations affichées sous chaque réponse.
+                                    </p>
+                                </div>
+
+                                <label class="inline-flex cursor-pointer items-center gap-3">
+
+                                    <input
+                                        type="checkbox"
+                                        wire:model.live="showDetailedMetadata"
+                                        class="h-5 w-5 rounded border-[#C87A2A] text-[#4B2E1F] focus:ring-[#C87A2A]"
+                                    >
+
+                                    <span class="text-sm font-medium text-[#4B2E1F]">
+                                        Afficher les informations de traçabilité
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                            {{-- Export PDF --}}
+                            <div class="shrink-0">
+
+                                <button
+                                    type="button"
+                                    wire:click="exportDetailedPdf"
+                                    wire:loading.attr="disabled"
+                                    wire:target="exportDetailedPdf"
+                                    class="inline-flex items-center gap-2 rounded-xl bg-[#4B2E1F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6B4A3A] disabled:cursor-not-allowed disabled:opacity-50"
+                                    style="
+                                        background-color: #BB7229;
+                                        padding-top: 10px;
+                                        padding-bottom: 10px;
+                                    "
+                                >
+                                    <span wire:loading.remove wire:target="exportDetailedPdf">
+                                        Exporter en PDF
+                                    </span>
+
+                                    <span wire:loading wire:target="exportDetailedPdf">
+                                        Préparation du PDF...
+                                    </span>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                        {{-- En-tête --}}
+                        <div class="rounded-2xl bg-[#4B2E1F] p-6 text-white">
+
+                            <p class="text-sm font-medium uppercase tracking-wide text-[#EADFD3]">
+                                Parcours santé
+                            </p>
+
+                            <h3 class="mt-2 text-2xl font-semibold">
+                                {{ $detailedSynthesis['title'] ?? 'Synthèse fonctionnelle détaillée' }}
+                            </h3>
+
+                            <p class="mt-2 text-sm text-[#F7F2EE]">
+                                Regroupement structuré des informations déclarées dans les questionnaires.
+                            </p>
+
+                        </div>
+
+                        {{-- Les 20 rubriques --}}
+                        @forelse ($detailedSynthesis['rubrics'] ?? [] as $rubric)
+
+                            <section class="overflow-hidden rounded-2xl border border-[#EADFD3] bg-white">
+
+                                {{-- Titre de la rubrique --}}
+                                <div class="border-b border-[#EADFD3] bg-[#F7F2EE] p-5">
+
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-[#8A5A44]">
+                                        Rubrique {{ $rubric['number'] }}
+                                    </p>
+
+                                    <h4 class="mt-1 text-lg font-semibold text-[#4B2E1F]">
+                                        {{ $rubric['title'] }}
+                                    </h4>
+
+                                </div>
+
+                                <div class="space-y-4 p-5">
+
+                                    @if (!empty($rubric['has_data']))
+
+                                        @foreach ($rubric['items'] as $item)
+
+                                            <article class="rounded-xl border border-[#EADFD3] bg-[#FDFBF9] p-4">
+
+                                                {{-- Question --}}
+                                                <p class="font-medium text-[#4B2E1F]">
+                                                    {{ $item['question'] }}
+                                                </p>
+
+                                                {{-- Réponse --}}
+                                                <div class="mt-3 rounded-lg bg-white p-3">
+
+                                                    @if ($showDetailedMetadata)
+                                                        <p class="text-xs font-semibold uppercase tracking-wide text-[#8A5A44]">
+                                                            Réponse déclarée
+                                                        </p>
+                                                    @endif
+
+                                                    <p class="mt-1 whitespace-pre-line text-sm text-[#4B2E1F]">
+                                                        {{ $item['answer'] }}
+                                                    </p>
+
+                                                </div>
+
+                                                {{-- Traçabilité --}}
+                                                @if ($showDetailedMetadata)
+                                                    <div class="mt-3 space-y-1 rounded-lg bg-[#F7F2EE] p-3 text-xs text-[#6B4A3A]">
+                                                        <p><strong>Questionnaire :</strong> {{ $item['questionnaire'] }}</p>
+                                                        <p><strong>Section d'origine :</strong> {{ $item['section'] }}</p>
+                                                        <p><strong>Clé technique :</strong> {{ $item['question_key'] }}</p>
+                                                        <p>
+                                                            <strong>Statut :</strong> {{ $item['status'] }}
+                                                            — Progression : {{ $item['progress'] }} %
+                                                        </p>
+                                                    </div>
+                                                @endif
+
+                                            </article>
+
+                                        @endforeach
+
+                                    @else
+
+                                        <div class="rounded-xl border border-dashed border-[#DCCABC] bg-[#FDFBF9] p-5">
+
+                                            <p class="text-sm italic text-[#8A5A44]">
+                                                {{ $rubric['empty_message'] ?? 'Aucune information disponible dans les questionnaires' }}
+                                            </p>
+
+                                        </div>
+
+                                    @endif
+
+                                </div>
+
+                            </section>
+
+                        @empty
+
+                            <div class="rounded-xl bg-[#F7F2EE] p-5 text-sm text-[#6B4A3A]">
+                                Aucune rubrique disponible pour cette synthèse.
+                            </div>
+
+                        @endforelse
+
+                    </div>
+
+                @endif    
+
 
                 {{-- Mention de prudence --}}
                 <p class="mt-6 border-t border-[#EADFD3] pt-4 text-xs leading-5 text-[#8A5A44]">

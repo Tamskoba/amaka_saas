@@ -153,14 +153,14 @@
 
             </div>
 
-        </section> -->
+        </section> 
 
 
         {{-- =====================================================
              STATS
         ====================================================== --}}
         <livewire:dashboard.dashboard-stats />
-
+        -->
 
         {{-- =====================================================
              À FAIRE MAINTENANT
@@ -169,23 +169,13 @@
 
             <div class="mb-4">
 
-                <p class="
-                    text-xs
-                    font-semibold
-                    uppercase
-                    tracking-[0.18em]
-                    text-[#D58224]
-                ">
-                    Prochaine étape
-                </p>
-
                 <h2 class="
                     mt-1
                     font-['Playfair_Display']
                     text-2xl
                     text-[#3B2923]
                 ">
-                    À faire maintenant
+                    Etat de vos questionnaires
                 </h2>
 
             </div>
@@ -209,16 +199,6 @@
             ">
 
                 <div>
-
-                    <p class="
-                        text-xs
-                        font-semibold
-                        uppercase
-                        tracking-[0.18em]
-                        text-[#D58224]
-                    ">
-                        Vos résultats
-                    </p>
 
                     <h2 class="
                         mt-1

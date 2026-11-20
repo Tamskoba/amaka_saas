@@ -67,7 +67,8 @@
                 font-medium
             "
         >
-            Tableau de bord
+            <span>🕘</span>        
+            <span>Tableau de bord</span> 
         </a>
 
         <a
@@ -80,7 +81,8 @@
                 hover:bg-[#F8F1EB]
             "
         >
-            Questionnaires
+            <span>🕘</span>        
+            <span>Questionnaires</span>
         </a>
 
         <a
@@ -93,30 +95,9 @@
                 hover:bg-[#F8F1EB]
             "
         >
-            Mon compte
-        </a>
-
-        <a
-            href="{{ route('sessions.history') }}"
-            class="
-                flex
-                items-center
-                gap-3
-                px-4
-                py-3
-                rounded-xl
-                text-gray-700
-                hover:bg-[#FDF8F4]
-                hover:text-[#4B2E1F]
-                transition
-            "
-        >
             <span>🕘</span>
-
-            <span>
-                Historique
-            </span>
-        </a>        
+            <span>Mon compte<span>
+        </a>       
         
         {{-- ADMIN ACCESS --}}
         @auth
