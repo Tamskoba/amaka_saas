@@ -22,21 +22,21 @@
     @livewireStyles
 </head>
 
-<body class="bg-[#F5F7FA] text-gray-800">
+<body class="text-gray-800" style="background-color: #F7F1ED;">
 
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen" style="background-color: #F7F1ED;">
 
         {{-- SIDEBAR --}}
         <livewire:layouts.sidebar />
 
         {{-- MAIN CONTENT --}}
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col" style="background-color: #F7F1ED;">
 
             {{-- TOPBAR --}}
             <livewire:layouts.topbar />
 
             {{-- PAGE CONTENT --}}
-            <main class="p-6">
+            <main class="p-6" style="background-color: #F7F1ED;">
 
                 {{ $slot }}
 

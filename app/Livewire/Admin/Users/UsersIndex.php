@@ -27,24 +27,28 @@ class UsersIndex extends Component
         $this->users = User::query()
             ->where('is_deleted', 0)
 
+            // Une micronutritionniste ne voit pas les administrateurs.
+            ->when(
+                auth()->user()?->role === 'micronutritionniste',
+                function ($query) {
+                    $query->where('role', '!=', 'admin');
+                }
+            )
+
             ->when(
                 $this->search,
                 function ($query) {
-
                     $query->where(function ($q) {
-
                         $q->where(
                             'first_name',
                             'like',
                             '%'.$this->search.'%'
                         )
-
                         ->orWhere(
                             'last_name',
                             'like',
                             '%'.$this->search.'%'
                         )
-
                         ->orWhere(
                             'email',
                             'like',

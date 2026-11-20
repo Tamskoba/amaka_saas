@@ -1,104 +1,243 @@
 <x-layouts.app>
 
-    <div class="space-y-10">
+    <div class="space-y-8"
+        style="
+            background-color: #F7F1ED;
+        " 
+    >
 
-        {{-- HERO --}}
-        <section
+        {{-- =====================================================
+             HEADER
+        ====================================================== --}}
+        <header>
+            <p class="text-sm text-[#6B5145]">
+                Votre espace AmakaNutrition
+            </p>
+
+            <h1 class="
+                mt-1
+                font-['Playfair_Display']
+                text-3xl
+                text-[#3B2923]
+                md:text-4xl
+            ">
+                Bonjour
+                @auth
+                    {{ auth()->user()->first_name }}
+                @endauth
+                👋
+            </h1>
+        </header>
+        <br>
+
+        {{-- =====================================================
+             PROGRESSION
+        ====================================================== --}}
+<!--         <section
             class="
                 relative
                 overflow-hidden
-                rounded-[40px]
-                bg-white
-                shadow-[0_10px_40px_rgba(0,0,0,0.04)]
-                p-10
-                md:p-14
+                rounded-[24px]
+                bg-[#513328]
+                p-7
+                text-white
+                shadow-[0_12px_35px_rgba(81,51,40,0.15)]
+                md:p-8
             "
         >
 
-            {{-- DECORATION --}}
+            {{-- Décoration --}}
             <div
                 class="
                     absolute
-                    top-0
-                    right-0
-                    w-96
-                    h-96
-                    bg-gradient-to-bl
-                    from-[#F3E3D2]
-                    to-transparent
+                    -right-16
+                    -top-20
+                    h-56
+                    w-56
                     rounded-full
+                    bg-[#F2E5DF]
+                    opacity-10
                 "
             ></div>
 
-            <div class="relative z-10 max-w-2xl">
+            <div class="relative z-10">
 
-                <p
-                    class="
-                        text-[#C87A2A]
-                        italic
-                        mb-3
-                        text-lg
-                    "
-                >
-                    @auth
+                <div class="
+                    flex
+                    flex-col
+                    gap-6
+                    md:flex-row
+                    md:items-end
+                    md:justify-between
+                ">
 
-                    Bonjour {{ auth()->user()->first_name }}
-                    @endauth
-                    <br>
-                    Votre espace bien-être personnalisé
-                </p>
+                    <div>
 
-                <h1
-                    class="
-                        text-5xl
-                        leading-tight
-                        text-[#4B2E1F]
-                        mb-6
-                        font-['Playfair_Display']
-                    "
-                >
-                    Une approche scientifique
-                    et humaine de votre santé.
-                </h1>
+                        <p class="
+                            text-xs
+                            font-semibold
+                            uppercase
+                            tracking-[0.18em]
+                            text-[#E6A45A]
+                        ">
+                            Votre parcours
+                        </p>
 
-                <p
-                    class="
-                        text-[#6B4A3A]
-                        text-lg
-                        leading-relaxed
-                    "
-                >
-                    Répondez à vos questionnaires,
-                    suivez vos analyses et obtenez
-                    des recommandations adaptées.
-                </p>
+                        <h2 class="
+                            mt-2
+                            font-['Playfair_Display']
+                            text-3xl
+                            md:text-4xl
+                        ">
+                            Continuez votre parcours
+                        </h2>
 
-                <button
-                    class="
-                        mt-8
-                        bg-[#C87A2A]
-                        hover:bg-[#B46D25]
-                        text-white
-                        px-8
-                        py-4
-                        rounded-2xl
-                        transition
-                    "
-                >
-                    Continuer mes questionnaires
-                </button>
+                        <p class="
+                            mt-2
+                            text-sm
+                            text-white/70
+                        ">
+                            2 questionnaires terminés sur 10
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="
+                            amaka-btn-primary
+                            !rounded-xl
+                            !px-5
+                            !py-3
+                            whitespace-nowrap
+                        "
+                    >
+                        Continuer →
+                    </button>
+
+                </div>
+
+
+                {{-- PROGRESSION --}}
+                <div class="mt-7">
+
+                    <div class="
+                        h-2
+                        overflow-hidden
+                        rounded-full
+                        bg-white/15
+                    ">
+                        <div
+                            class="
+                                h-full
+                                rounded-full
+                                bg-[#D58224]
+                            "
+                            style="width: 20%"
+                        ></div>
+                    </div>
+
+                    <div class="
+                        mt-2
+                        flex
+                        justify-between
+                        text-xs
+                        text-white/50
+                    ">
+                        <span>Votre progression</span>
+                        <span>20 %</span>
+                    </div>
+
+                </div>
 
             </div>
 
-        </section>
+        </section> -->
 
-        <livewire:dashboard.questionnaire-cards />
 
-        {{-- STATS --}}
+        {{-- =====================================================
+             STATS
+        ====================================================== --}}
         <livewire:dashboard.dashboard-stats />
 
-        {{-- RECENT ACTIVITY --}}
-        <livewire:dashboard.recent-activity />
+
+        {{-- =====================================================
+             À FAIRE MAINTENANT
+        ====================================================== --}}
+        <section>
+
+            <div class="mb-4">
+
+                <p class="
+                    text-xs
+                    font-semibold
+                    uppercase
+                    tracking-[0.18em]
+                    text-[#D58224]
+                ">
+                    Prochaine étape
+                </p>
+
+                <h2 class="
+                    mt-1
+                    font-['Playfair_Display']
+                    text-2xl
+                    text-[#3B2923]
+                ">
+                    À faire maintenant
+                </h2>
+
+            </div>
+
+
+            <livewire:dashboard.questionnaire-cards />
+
+        </section>
+
+
+        {{-- =====================================================
+             ACTIVITÉ RÉCENTE
+        ====================================================== --}}
+        <section>
+
+            <div class="
+                mb-4
+                flex
+                items-end
+                justify-between
+            ">
+
+                <div>
+
+                    <p class="
+                        text-xs
+                        font-semibold
+                        uppercase
+                        tracking-[0.18em]
+                        text-[#D58224]
+                    ">
+                        Vos résultats
+                    </p>
+
+                    <h2 class="
+                        mt-1
+                        font-['Playfair_Display']
+                        text-2xl
+                        text-[#3B2923]
+                    ">
+                        Dernière activité
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <livewire:dashboard.recent-activity />
+
+        </section>
+
     </div>
 
 </x-layouts.app>

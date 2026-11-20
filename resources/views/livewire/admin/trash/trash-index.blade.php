@@ -40,6 +40,7 @@
 
     </div>
 
+
     {{-- TABS --}}
     <div
         class="
@@ -49,11 +50,8 @@
     >
 
         <button
-
             wire:click="$set('tab', 'forms')"
-
             @class([
-
                 'px-4 py-2 rounded-lg transition',
 
                 'bg-[#C87A2A] text-black'
@@ -61,19 +59,15 @@
 
                 'bg-gray-100 text-gray-700'
                     => $tab !== 'forms',
-
             ])
-
         >
             Questionnaires
         </button>
 
+
         <button
-
             wire:click="$set('tab', 'users')"
-
             @class([
-
                 'px-4 py-2 rounded-lg transition',
 
                 'bg-[#C87A2A] text-black'
@@ -81,14 +75,13 @@
 
                 'bg-gray-100 text-gray-700'
                     => $tab !== 'users',
-
             ])
-
         >
             Utilisateurs
         </button>
 
     </div>
+
 
     {{-- QUESTIONNAIRES --}}
     @if($tab === 'forms')
@@ -145,6 +138,7 @@
 
                 </thead>
 
+
                 <tbody>
 
                     @forelse($forms as $form)
@@ -169,6 +163,7 @@
 
                             </td>
 
+
                             <td
                                 class="
                                     p-4
@@ -178,6 +173,7 @@
                             >
                                 {{ $form['description'] }}
                             </td>
+
 
                             <td
                                 class="
@@ -189,6 +185,7 @@
                                 {{ $form['deleted_at'] }}
                             </td>
 
+
                             <td
                                 class="
                                     p-4
@@ -198,6 +195,7 @@
                             >
                                 {{ $form['purge_at'] }}
                             </td>
+
 
                             <td
                                 class="
@@ -214,14 +212,13 @@
                                     "
                                 >
 
+                                    {{-- RESTAURER --}}
                                     <button
-
                                         wire:click="
                                             restoreForm(
                                                 {{ $form['id'] }}
                                             )
                                         "
-
                                         class="
                                             px-3
                                             py-2
@@ -233,19 +230,35 @@
                                         Restaurer
                                     </button>
 
-                                    <button
-                                        wire:click="forceDeleteForm({{ $form['id'] }})"
-                                        onclick="return confirm('Supprimer définitivement ce questionnaire ?')"
-                                        class="
-                                            px-3
-                                            py-1
-                                            rounded-lg
-                                            bg-red-600
-                                            text-white
-                                        "
-                                    >
-                                        Supprimer définitivement
-                                    </button>
+
+                                    {{-- SUPPRESSION DÉFINITIVE : ADMIN UNIQUEMENT --}}
+                                    @if(
+                                        auth()->user()?->role === 'admin'
+                                    )
+
+                                        <button
+                                            wire:click="
+                                                forceDeleteForm(
+                                                    {{ $form['id'] }}
+                                                )
+                                            "
+                                            onclick="
+                                                return confirm(
+                                                    'Supprimer définitivement ce questionnaire ?'
+                                                )
+                                            "
+                                            class="
+                                                px-3
+                                                py-1
+                                                rounded-lg
+                                                bg-red-600
+                                                text-white
+                                            "
+                                        >
+                                            Supprimer définitivement
+                                        </button>
+
+                                    @endif
 
                                 </div>
 
@@ -279,6 +292,7 @@
         </div>
 
     @endif
+
 
     {{-- UTILISATEURS --}}
     @if($tab === 'users')
@@ -339,6 +353,7 @@
 
                 </thead>
 
+
                 <tbody>
 
                     @forelse($users as $user)
@@ -397,14 +412,13 @@
                                     "
                                 >
 
+                                    {{-- RESTAURER --}}
                                     <button
-
                                         wire:click="
                                             restoreUser(
                                                 {{ $user['id'] }}
                                             )
                                         "
-
                                         class="
                                             px-3
                                             py-2
@@ -416,19 +430,35 @@
                                         Restaurer
                                     </button>
 
-                                    <button
-                                        wire:click="forceDeleteUser({{ $user['id'] }})"
-                                        onclick="return confirm('Supprimer définitivement cet utilisateur ?')"
-                                        class="
-                                            px-3
-                                            py-1
-                                            rounded-lg
-                                            bg-red-600
-                                            text-white
-                                        "
-                                    >
-                                        Supprimer définitivement
-                                    </button>
+
+                                    {{-- SUPPRESSION DÉFINITIVE : ADMIN UNIQUEMENT --}}
+                                    @if(
+                                        auth()->user()?->role === 'admin'
+                                    )
+
+                                        <button
+                                            wire:click="
+                                                forceDeleteUser(
+                                                    {{ $user['id'] }}
+                                                )
+                                            "
+                                            onclick="
+                                                return confirm(
+                                                    'Supprimer définitivement cet utilisateur ?'
+                                                )
+                                            "
+                                            class="
+                                                px-3
+                                                py-1
+                                                rounded-lg
+                                                bg-red-600
+                                                text-white
+                                            "
+                                        >
+                                            Supprimer définitivement
+                                        </button>
+
+                                    @endif
 
                                 </div>
 

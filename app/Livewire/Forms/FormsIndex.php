@@ -3,85 +3,197 @@
 namespace App\Livewire\Forms;
 
 use App\Models\Form;
-use Illuminate\Support\Facades\Redirect;
+use App\Models\ResponseSet;
+use App\Models\UserSession;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class FormsIndex extends Component
 {
-    public $forms = [];
+    public array $forms = [];
 
     public function mount(): void
     {
-        $this->forms = Form::whereHas(
+        $user = Auth::user();
 
-            'users',
+        /*
+        |--------------------------------------------------------------------------
+        | Aucun utilisateur connecté
+        |--------------------------------------------------------------------------
+        */
 
-            function ($query) {
+        if (! $user) {
+            $this->forms = [];
 
-                $query
+            return;
+        }
 
-                    ->where('user_id', Auth::id())
+        /*
+        |--------------------------------------------------------------------------
+        | Session active
+        |--------------------------------------------------------------------------
+        */
 
-                    ->where('is_visible', true);
-
-            }
-
-        )
-
-        ->with(['responseSets' => function ($query) {
-
-            $query->where(
-
-                'user_id',
-
-                Auth::id()
-
-            );
-
-        }])
-
-        ->get()
-
-        ->map(function ($form) {
-
-            $response = $form
-
-                ->responseSets
-
-                ->first();
-
-            return [
-
-                'id' => $form->id,
-
-                'title' => $form->title,
-
-                'description' => $form->description,
-
-                'status' => $response->status ?? 'not_started',
-
-                'progress' => $response->progress ?? 0,
-
-                'updated_at' => $response->updated_at ?? now(),
-
-            ];
-
-        });
-    }
-
-    public function render()
-    {
-        return view(
-            'livewire.forms.forms-index'
+        $session = UserSession::firstOrCreate(
+            [
+                'user_id' => $user->id,
+                'status' => 'active',
+            ],
+            [
+                'session_number' => 1,
+            ]
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Questionnaires assignés et visibles
+        |--------------------------------------------------------------------------
+        */
+
+        $assignedForms = Form::whereHas(
+            'users',
+            function ($query) use ($user) {
+                $query
+                    ->where('user_id', $user->id)
+                    ->where('is_visible', true);
+            }
+        )
+        ->where('is_active', 1)
+        ->where('is_deleted', 0)
+        ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Construction de la liste avec le bon statut
+        |--------------------------------------------------------------------------
+        */
+
+        $this->forms = $assignedForms
+            ->map(function ($form) use ($user, $session) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Réponse du questionnaire pour la session active
+                |--------------------------------------------------------------------------
+                */
+
+                $response = ResponseSet::where('user_id', $user->id)
+                    ->where('form_id', $form->id)
+                    ->where('session_id', $session->id)
+                    ->first();
+
+                /*
+                |--------------------------------------------------------------------------
+                | Détermination du statut normalisé
+                |--------------------------------------------------------------------------
+                */
+
+                if (! $response) {
+                    $status = 'not_started';
+                } else {
+                    $status = match ($response->status) {
+                        'completed' => 'completed',
+
+                        'progress',
+                        'in_progress' => 'in_progress',
+
+                        'new',
+                        'not_started' => 'not_started',
+
+                        default => 'not_started',
+                    };
+                }
+
+                return [
+                    'id' => $form->id,
+
+                    'title' => $form->title,
+
+                    'description' => $form->description,
+
+                    'status' => $status,
+
+                    'progress' => $response?->progress ?? 0,
+
+                    'updated_at' =>
+                        $response?->updated_at
+                        ?? $form->updated_at,
+                ];
+            })
+            ->values()
+            ->toArray();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ouvrir un questionnaire
+    |--------------------------------------------------------------------------
+    |
+    | Utilisé pour :
+    | - commencer un questionnaire
+    | - continuer un questionnaire
+    | - consulter un questionnaire terminé
+    |
+    */
 
     public function openForm(int $formId)
     {
         return redirect()->route(
             'forms.run',
-            $formId
+            [
+                'form' => $formId,
+            ]
         );
-    }   
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Consulter un questionnaire terminé
+    |--------------------------------------------------------------------------
+    |
+    | Le questionnaire est ouvert sans ?edit=1.
+    | FormRunner affiche alors les réponses existantes en lecture.
+    |
+    */
+
+    public function viewForm(int $formId)
+    {
+        return redirect()->route(
+            'forms.run',
+            [
+                'form' => $formId,
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modifier un questionnaire terminé
+    |--------------------------------------------------------------------------
+    |
+    | Le paramètre edit=1 active le mode modification dans FormRunner.
+    |
+    */
+
+    public function editForm(int $formId)
+    {
+        return redirect()->route(
+            'forms.run',
+            [
+                'form' => $formId,
+                'edit' => 1,
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Render
+    |--------------------------------------------------------------------------
+    */
+
+    public function render()
+    {
+        return view('livewire.forms.forms-index');
+    }
 }

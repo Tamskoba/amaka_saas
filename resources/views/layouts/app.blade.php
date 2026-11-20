@@ -38,10 +38,10 @@
 
 <body
     class="
-        bg-[#FDF8F4]
         text-[#4B2E1F]
         font-['Inter']
     "
+    style="background-color: #F7F1ED;"    
 >
 
     <div class="flex min-h-screen">

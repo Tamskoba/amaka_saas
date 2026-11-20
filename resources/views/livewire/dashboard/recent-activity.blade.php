@@ -1,10 +1,7 @@
 <div
     class="
-        bg-white
         rounded-[32px]
         p-8
-        border
-        border-[#F1E4D8]
         shadow-[0_10px_40px_rgba(0,0,0,0.04)]
     "
 >

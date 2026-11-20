@@ -157,7 +157,41 @@
                         >
                             Questionnaires
                         </a>
+                        <a
+                            href="{{ route(
+                                'admin.users.sessions',
+                                $user['id']
+                            ) }}"
+                            class="
+                                px-3
+                                py-1
+                                rounded-lg
+                                bg-purple-100
+                                text-purple-700
+                            "
+                        >
+                            sessions
+                        </a>
 
+                        <a
+                            href="{{ route(
+                                'admin.users.functional-synthesis',
+                                $user['id']
+                            ) }}"
+                            class="
+                                inline-block
+                                px-3
+                                py-1
+                                rounded-lg
+                                bg-[#F7F2EE]
+                                text-[#4B2E1F]
+                                border
+                                border-[#EADFD3]
+                                hover:bg-[#EADFD3]
+                            "
+                        >
+                            Synthèse
+                        </a>                        
                     </td>
 
                 </tr>
