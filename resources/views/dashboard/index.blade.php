@@ -25,7 +25,6 @@
                 @auth
                     {{ auth()->user()->first_name }}
                 @endauth
-                👋
             </h1>
         </header>
         <br>
@@ -153,14 +152,14 @@
 
             </div>
 
-        </section> -->
+        </section> 
 
 
         {{-- =====================================================
              STATS
         ====================================================== --}}
         <livewire:dashboard.dashboard-stats />
-
+        -->
 
         {{-- =====================================================
              À FAIRE MAINTENANT
@@ -169,29 +168,19 @@
 
             <div class="mb-4">
 
-                <p class="
-                    text-xs
-                    font-semibold
-                    uppercase
-                    tracking-[0.18em]
-                    text-[#D58224]
-                ">
-                    Prochaine étape
-                </p>
-
                 <h2 class="
                     mt-1
                     font-['Playfair_Display']
                     text-2xl
                     text-[#3B2923]
                 ">
-                    À faire maintenant
+                    Etat de vos questionnaires
                 </h2>
 
             </div>
 
 
-            <livewire:dashboard.questionnaire-cards />
+            <livewire:dashboard.dashboard-stats />
 
         </section>
 
@@ -199,44 +188,44 @@
         {{-- =====================================================
              ACTIVITÉ RÉCENTE
         ====================================================== --}}
-        <section>
+                {{-- ADMIN ACCESS --}}
+        @auth
+        @if(
 
-            <div class="
-                mb-4
-                flex
-                items-end
-                justify-between
-            ">
+            auth()->user()->role === 'admin'
+            || auth()->user()->role === 'super_admin'
+            || auth()->user()->role === 'micronutritionniste'
+        )
+            <section>
 
-                <div>
+                <div class="
+                    mb-4
+                    flex
+                    items-end
+                    justify-between
+                ">
 
-                    <p class="
-                        text-xs
-                        font-semibold
-                        uppercase
-                        tracking-[0.18em]
-                        text-[#D58224]
-                    ">
-                        Vos résultats
-                    </p>
+                    <div>
 
-                    <h2 class="
-                        mt-1
-                        font-['Playfair_Display']
-                        text-2xl
-                        text-[#3B2923]
-                    ">
-                        Dernière activité
-                    </h2>
+                        <h2 class="
+                            mt-1
+                            font-['Playfair_Display']
+                            text-2xl
+                            text-[#3B2923]
+                        ">
+                            Dernière activité
+                        </h2>
+
+                    </div>
 
                 </div>
 
-            </div>
 
+                <livewire:dashboard.recent-activity />
 
-            <livewire:dashboard.recent-activity />
-
-        </section>
+            </section>
+        @endif
+        @endauth
 
     </div>
 

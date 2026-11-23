@@ -55,68 +55,36 @@
     {{-- NAVIGATION --}}
     <nav class="flex-1 p-5 space-y-3">
 
-        <a
-            href="/dashboard"
-            class="
-                block
-                px-5
-                py-4
-                rounded-2xl
-                bg-[#F6EEE7]
-                text-[#4B2E1F]
-                font-medium
-            "
-        >
-            Tableau de bord
+        <a href="/dashboard"
+            class="flex items-center gap-3 rounded-xl px-4 py-3 transition
+            {{ request()->routeIs('dashboard')
+                ? 'bg-[#C87A2A] text-black font-semibold shadow-sm'
+                : 'text-[#6B4A3A] hover:bg-[#EADFD3]' }}">
+            <span>📊</span>        
+            <span>Mon tableau de bord</span> 
         </a>
 
         <a
             href="/forms"
-            class="
-                block
-                px-5
-                py-4
-                rounded-2xl
-                hover:bg-[#F8F1EB]
-            "
+            class="flex items-center gap-3 rounded-xl px-4 py-3 transition
+            {{ request()->routeIs('forms.index')
+                    ? 'bg-[#C87A2A] text-black font-semibold shadow-sm'
+                    : 'text-[#6B4A3A] hover:bg-[#EADFD3]' }}"
         >
-            Questionnaires
+            <span>📋</span>        
+            <span>Mes questionnaires</span>
         </a>
 
         <a
             href="/profile"
-            class="
-                block
-                px-5
-                py-4
-                rounded-2xl
-                hover:bg-[#F8F1EB]
-            "
+            class="flex items-center gap-3 rounded-xl px-4 py-3 transition
+            {{ request()->routeIs('profile')
+                    ? 'bg-[#C87A2A] text-whblackite font-semibold shadow-sm'
+                    : 'text-[#6B4A3A] hover:bg-[#EADFD3]' }}"
         >
-            Mon compte
-        </a>
-
-        <a
-            href="{{ route('sessions.history') }}"
-            class="
-                flex
-                items-center
-                gap-3
-                px-4
-                py-3
-                rounded-xl
-                text-gray-700
-                hover:bg-[#FDF8F4]
-                hover:text-[#4B2E1F]
-                transition
-            "
-        >
-            <span>🕘</span>
-
-            <span>
-                Historique
-            </span>
-        </a>        
+            <span>👤</span>
+            <span>Mon compte<span>
+        </a>       
         
         {{-- ADMIN ACCESS --}}
         @auth

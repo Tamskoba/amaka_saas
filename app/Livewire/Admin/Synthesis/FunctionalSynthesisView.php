@@ -8,9 +8,11 @@ use App\Models\ResponseSet;
 use App\Models\User;
 use App\Models\UserSession;
 use App\Services\Synthesis\FunctionalSynthesisGenerator;
+use App\Services\Synthesis\DetailedSynthesisBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FunctionalSynthesisView extends Component
 {
@@ -23,6 +25,10 @@ class FunctionalSynthesisView extends Component
     public ?FunctionalSynthesis $synthesis = null;
 
     public array $synthesisData = [];
+
+    public array $detailedSynthesis = [];
+
+    public bool $showDetailedMetadata = true;
 
     public function mount(User $user): void
     {
@@ -93,6 +99,7 @@ class FunctionalSynthesisView extends Component
     {
         $this->synthesis = null;
         $this->synthesisData = [];
+        $this->detailedSynthesis = [];
 
         if ($this->selectedSessionId) {
             $this->loadSynthesisData();
@@ -107,6 +114,7 @@ class FunctionalSynthesisView extends Component
         if (!in_array($this->presentationMode, [
             'questionnaire',
             'theme',
+            'detailed',
         ], true)) {
             $this->presentationMode = 'questionnaire';
         }
@@ -166,9 +174,15 @@ class FunctionalSynthesisView extends Component
             ->orderBy('id')
             ->get();
 
+        // Modes de présentation existants.
         $this->synthesisData = $this->buildPresentationData(
             $responseSets
         );
+
+        // Nouveau mode : synthèse fonctionnelle détaillée.
+        $this->detailedSynthesis = app(
+            DetailedSynthesisBuilder::class
+        )->build($responseSets);
     }
 
     /**
@@ -446,6 +460,74 @@ class FunctionalSynthesisView extends Component
             ->where('user_id', $user->id)
             ->findOrFail($this->selectedSessionId);
     }
+
+    /**
+     * Exporte la synthèse fonctionnelle détaillée au format PDF.
+     */
+    public function exportDetailedPdf()
+    {
+        // L'export est réservé au mode détaillé.
+        abort_unless(
+            $this->presentationMode === 'detailed',
+            403,
+            'L’export PDF est disponible uniquement en mode détaillé.'
+        );
+
+        // Vérification de l'utilisateur et de ses autorisations.
+        $user = $this->getSelectedUser();
+
+        Gate::authorize('functional-synthesis.view', $user);
+
+        // Vérification que la session appartient bien à cet utilisateur.
+        $session = $this->getSelectedSession($user);
+
+        // Recharger les questionnaires et les réponses de la session.
+        $responseSets = ResponseSet::query()
+            ->where('user_id', $user->id)
+            ->where('session_id', $session->id)
+            ->with([
+                'form.sections.questions.options',
+                'answers.question.options',
+                'answers.question.section',
+            ])
+            ->orderBy('form_id')
+            ->orderBy('id')
+            ->get();
+
+        // Reconstruire la synthèse à partir des données actuelles.
+        $detailedSynthesis = app(
+            DetailedSynthesisBuilder::class
+        )->build($responseSets);
+
+        // Respecter l'état de la checkbox de traçabilité.
+        $showDetailedMetadata = $this->showDetailedMetadata;
+
+        $pdf = Pdf::loadView(
+            'pdf.synthesis.detailed',
+            [
+                'user' => $user,
+                'session' => $session,
+                'synthesis' => $detailedSynthesis,
+                'showMetadata' => $showDetailedMetadata,
+                'exportedAt' => now(),
+            ]
+        )->setPaper('a4', 'portrait');
+
+        $filename = 'synthese-detaillee-session-'
+            . $session->session_number
+            . '-' . $user->id
+            . '.pdf';
+
+        return response()->streamDownload(
+            function () use ($pdf) {
+                echo $pdf->output();
+            },
+            $filename,
+            [
+                'Content-Type' => 'application/pdf',
+            ]
+        );
+    }    
 
     /**
      * Affichage de la page.
