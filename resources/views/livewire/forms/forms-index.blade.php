@@ -19,16 +19,6 @@
 
         <div>
 
-            <p
-                class="
-                    text-[#C9822B]
-                    italic
-                    mb-2
-                "
-            >
-                Tableau de bord
-            </p>
-
             <h1
                 class="
                     text-4xl

@@ -101,19 +101,6 @@
         </a>
 
         <a
-            href="#"
-            class="
-                block
-                px-5
-                py-4
-                rounded-2xl
-                hover:bg-[#F8F1EB]
-            "
-        >
-            Rapports PDF
-        </a>
-
-        <a
             href="/dashboard"
             class="
                 block

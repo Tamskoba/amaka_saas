@@ -69,7 +69,7 @@
 
             🔔
 
-            <span
+<!--             <span
                 class="
                     absolute
                     -top-1
@@ -86,7 +86,7 @@
                 "
             >
                 3
-            </span>
+            </span> -->
 
         </button>
 
@@ -114,7 +114,7 @@
                 </div>
 
             </div>
-
+<!-- 
             <div
                 class="
                     h-12
@@ -129,7 +129,7 @@
                 "
             >
                 {{ strtoupper(substr(auth()->user()->first_name,0,1)) }}
-            </div>
+            </div> -->
 
         @endauth
 
