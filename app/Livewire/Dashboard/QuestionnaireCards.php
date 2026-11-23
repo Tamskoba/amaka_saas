@@ -16,6 +16,8 @@ class QuestionnaireCards extends Component
     public int $inProgress = 0;
     public int $notStarted = 0;
 
+    public string $selectedStatus = 'all';
+
     /**
      * Chargement des questionnaires assignés.
      */
@@ -220,6 +222,23 @@ class QuestionnaireCards extends Component
     }
 
     /**
+     * Filtrer les questionnaires selon leur statut.
+     */
+    public function filterByStatus(string $status): void
+    {
+        $allowedStatuses = [
+            'all',
+            'not_started',
+            'in_progress',
+            'completed',
+        ];
+
+        if (in_array($status, $allowedStatuses, true)) {
+            $this->selectedStatus = $status;
+        }
+    }
+
+    /**
      * Consulter un questionnaire.
      *
      * Pour un questionnaire terminé, les réponses existantes
@@ -267,6 +286,19 @@ class QuestionnaireCards extends Component
      */
     public function render()
     {
-        return view('livewire.dashboard.questionnaire-cards');
+        $filteredForms = collect($this->forms)
+            ->when(
+                $this->selectedStatus !== 'all',
+                fn ($forms) => $forms->where(
+                    'status',
+                    $this->selectedStatus
+                )
+            )
+            ->values();
+
+        return view(
+            'livewire.dashboard.questionnaire-cards',
+            compact('filteredForms')
+        );
     }
 }
